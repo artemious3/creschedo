@@ -22,10 +22,11 @@ static unsigned long djb2_hash(const char *str) {
     return hash;
 }
 
-struct shell shell_new(){
+struct shell shell_new(void* context){
 	struct shell self = {
 		.cmd_callbacks = {NULL},
-		.cmd_hashes = {0}
+		.cmd_hashes = {0},
+		.context = context
 	};
 	return self;
 }
@@ -141,7 +142,7 @@ void shell_start(struct shell * self) {
 		if(callback == NULL){
 			fprintf(stderr, "unkown command: %s\n", input.cmd);
 		} else {
-			callback(input.arg);
+			callback(self->context, input.arg);
 			printf("\n");
 		}
 

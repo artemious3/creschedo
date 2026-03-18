@@ -1,7 +1,7 @@
 #include "shell.h"
 #include <stdio.h>
 
-int dbg(const char* args[SHELL_ARG_MAX]){
+int dbg(void* _, const char* args[SHELL_ARG_MAX]){
 	printf("This is a shell debug command\n");
 
 	for(int i = 0; i < SHELL_ARG_MAX; ++i){
@@ -19,7 +19,7 @@ int dbg(const char* args[SHELL_ARG_MAX]){
 int main(){
 	printf("RobinBobin Scheduler Simulator.\n");
 	printf("Run `help` to get list of allowed commands\n");
-	struct shell sh = shell_new();
+	struct shell sh = shell_new(NULL);
 	shell_register_callback(&sh, "dbg", dbg);
 	shell_start(&sh);
 }
