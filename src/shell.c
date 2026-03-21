@@ -5,11 +5,6 @@
 #include <assert.h>
 #include "shell.h"
 
-struct shell_input {
-  const char *cmd;
-  const char *arg[SHELL_ARG_MAX];
-	bool too_many_args;
-};
 
 static unsigned long djb2_hash(const char *str) {
     unsigned long hash = 5381; 
@@ -64,12 +59,12 @@ static cmd_callback_t shell_get_callback(struct shell* self, const char * cmd){
 }
 
 
-static struct shell_input shell_process_raw_input(char *raw_cmd) {
+struct shell_input shell_split_into_words(char *raw_cmd) {
 
-  struct shell_input self = {.cmd = NULL, .arg = {NULL}, .too_many_args = false};
+  struct shell_input self = {.words = {NULL}, .too_many_words = false};
 
   char *c = raw_cmd;
-  int arg_counter = 0;
+  int word_counter = 0;
   const char *current_cmd_or_arg;
 
   while (isspace(*c))
@@ -88,18 +83,14 @@ static struct shell_input shell_process_raw_input(char *raw_cmd) {
 			break;
 		}
 
-		if(arg_counter == SHELL_ARG_MAX+1){
-			self.too_many_args = true;
+		if(word_counter == SHELL_WORDS_MAX+1){
+			self.too_many_words = true;
 			break;
 		}
 
-    if (arg_counter == 0) {
-      self.cmd = current_cmd_or_arg;
-    } else {
-      self.arg[arg_counter - 1] = current_cmd_or_arg;
-    }
+		self.words[word_counter] = current_cmd_or_arg;
 
-    arg_counter++;
+    word_counter++;
 
 
     *c = 0;
@@ -126,23 +117,23 @@ void shell_start(struct shell * self) {
 			break;
 		}
 
-		struct shell_input input = shell_process_raw_input(raw_input);
+		struct shell_input input = shell_split_into_words(raw_input);
 
 		// skip empty input
-		if(input.cmd == NULL){
+		if(input.words[0] == NULL){
 			continue;
 		}
 
-		if(input.too_many_args){
-			printf("too many arguments, maximum is %d\n", SHELL_ARG_MAX);
+		if(input.too_many_words){
+			printf("too many arguments, maximum is %d\n", SHELL_ARGS_MAX);
 			continue;
 		}
 
-		cmd_callback_t callback = shell_get_callback(self, input.cmd);
+		cmd_callback_t callback = shell_get_callback(self, input.words[0]);
 		if(callback == NULL){
-			fprintf(stderr, "unkown command: %s\n", input.cmd);
+			fprintf(stderr, "unkown command: %s\n", input.words[0]);
 		} else {
-			callback(self->context, input.arg);
+			callback(self->context, &input.words[1]);
 			printf("\n");
 		}
 
