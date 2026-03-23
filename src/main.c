@@ -51,25 +51,25 @@ static int run_process(void * ctx, const char * args[SHELL_ARGS_MAX]){
 	char line[16];
 	struct program prg = program_new();
 	
-	printf("program> ");
+	eprintf("program> ");
 	while ( fgets(line, 15, stdin) != NULL && line[0] != '\n' ){
 		struct shell_input input = shell_split_into_words(line);
 		bool err;
 
 		long count = parse_count(input.words[0], &err);
 		if(err){
-			printf("error: bad op count\nprogram> ");
+			eprintf("error: bad op count\nprogram> ");
 			continue;
 		}
 
 		program_op op = parse_op(input.words[1], &err);
 		if(err){
-			printf("error: bad op\nprogram> ");
+			eprintf("error: bad op\nprogram> ");
 			continue;
 		}
 
 		program_append_ops(&prg, count, op);
-		printf("program> ");
+		eprintf("program> ");
 	}
 
 	simulation_process_run(sim, prg);
@@ -84,10 +84,15 @@ static int process_list(void * ctx, const char * args[SHELL_ARGS_MAX]){
 	return 0;
 }
 
+static int process_remove(void * ctx, const char * args[SHELL_ARGS_MAX]){
+	struct simulation * sim = (struct simulation *)(ctx);
+	return 0;
+}
+
 
 int main(){
-	printf("CreSchedo - OS Scheduler Simulator.\n");
-	printf("Run `help` to get list of allowed commands\n");
+	eprintf("CreSchedo - OS Scheduler Simulator.\n");
+	eprintf("Run `help` to get list of allowed commands\n");
 	struct simulation sim = simulation_new();
 	struct shell sh = shell_new((void*)&sim);
 	shell_register_callback(&sh, "spawn", run_process);

@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <assert.h>
 #include "shell.h"
-
+#include "utils.h"
 
 static unsigned long djb2_hash(const char *str) {
     unsigned long hash = 5381; 
@@ -109,7 +109,7 @@ struct shell_input shell_split_into_words(char *raw_cmd) {
 void shell_start(struct shell * self) {
 	char raw_input[256];
   while (1) {
-    printf("> ");
+    eprintf("> ");
 
 		// if encountered EOF or an error occured,
 		// stop the shell
@@ -125,16 +125,16 @@ void shell_start(struct shell * self) {
 		}
 
 		if(input.too_many_words){
-			printf("too many arguments, maximum is %d\n", SHELL_ARGS_MAX);
+			eprintln("too many arguments, maximum is %d", SHELL_ARGS_MAX);
 			continue;
 		}
 
 		cmd_callback_t callback = shell_get_callback(self, input.words[0]);
 		if(callback == NULL){
-			fprintf(stderr, "unkown command: %s\n", input.words[0]);
+			eprintf("unkown command: %s\n", input.words[0]);
 		} else {
 			callback(self->context, &input.words[1]);
-			printf("\n");
+			eprintln("");
 		}
 
 	}
