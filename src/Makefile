@@ -4,11 +4,10 @@ CFLAGS = -std=c23 -Wall -pedantic
 CFLAGS.debug = -O0 -g -fsanitize=address
 CFLAGS.release = -O3 
 CFLAGS += $(CFLAGS.$(BUILD))
-TARGET = rbobin
+TARGET = creschedo
 SRC = main.c shell.c program.c
 OBJ = $(SRC:.c=.o)
 DEP = $(SRC:.c=.d)
-TARGET = rbobin
 
 %.o: %.c
 	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@

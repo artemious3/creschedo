@@ -79,7 +79,7 @@ static int run_process(void * ctx, const char * args[SHELL_ARGS_MAX]){
 
 
 int main(){
-	printf("RobinBobin Scheduler Simulator.\n");
+	printf("CreSchedo - OS Scheduler Simulator.\n");
 	printf("Run `help` to get list of allowed commands\n");
 	struct shell sh = shell_new(NULL);
 	shell_register_callback(&sh, "run", run_process);

@@ -1,7 +1,7 @@
 .PHONY: all clean
 
 all:
-	$(MAKE) -C src rbobin
+	$(MAKE) -C src creschedo
 
 release:
 	$(MAKE) -C src BUILD=release rbobin
