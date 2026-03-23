@@ -19,7 +19,7 @@ long parse_count(const char * s, bool * err){
 
 	char* end;
 	long result = strtol(s, &end , 10);
-	if(end == s || *end != '\0'){
+	if(end == s || *end != '\0' || result <= 0){
 		*err = true;
 		return 0;
 	} 
@@ -46,12 +46,12 @@ program_op parse_op(const char * s, bool * err){
 }
 
 static int run_process(void * ctx, const char * args[SHELL_ARGS_MAX]){
-
 	char line[16];
+	struct program prg = program_new();
+	
 	printf("program> ");
 	while ( fgets(line, 15, stdin) != NULL && line[0] != '\n' ){
 		struct shell_input input = shell_split_into_words(line);
-
 		bool err;
 
 		long count = parse_count(input.words[0], &err);
@@ -66,9 +66,12 @@ static int run_process(void * ctx, const char * args[SHELL_ARGS_MAX]){
 			continue;
 		}
 
-		printf("dbg: success\n");
-		printf("dbg: cnt %ld, op %s\n", count, op == OP_RUN ? "RUN" : "WAIT");
+		program_append_ops(&prg, count, op);
+		printf("program> ");
 	}
+
+	program_list(&prg);
+	program_free(&prg);
 
 	return 0;
 }

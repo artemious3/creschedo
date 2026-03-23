@@ -41,4 +41,19 @@ void program_free(struct program * self){
 	free(self->ops);
 }
 
+void program_list(struct program * self){
+	for(int i = 0; i < self->length; ++i){
+		char op_representation;
+		switch(self->ops[i]){
+			case OP_RUN:
+				op_representation = 'R';
+				break;
+			case  OP_WAIT:
+				op_representation = 'W';
+				break;
+		}
+		printf("%c\n", op_representation);
+	}
+}
+
 

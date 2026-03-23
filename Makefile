@@ -1,10 +1,10 @@
 .PHONY: all clean
 
-all: 
-	$(MAKE) -C src rbobin
+all:
+	$(MAKE) -d -C src rbobin
 
 clean:
-	$(MAKE) -C src clean
+	$(MAKE) -d -C src clean
 
 
 

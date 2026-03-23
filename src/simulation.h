@@ -26,7 +26,8 @@ struct simulation simulation_new();
 
 void simulation_tick(struct simulation *self);
 
-void simulation_process_run(struct simulation *self, struct program prg);
+bool simulation_process_run(struct simulation *self, struct program prg);
 
-void simulation_process_remove(struct simulation *self, prid_t prid);
+bool simulation_process_remove(struct simulation *self, prid_t prid);
+
 

@@ -1,7 +1,8 @@
 CC=clang
-CFLAGS = -Wall -g
+CFLAGS = -Wall -g -MMD -MP
 TARGET = rbobin
-OBJ = main.o shell.o
+OBJ = main.o shell.o program.o
+DEPS = $(OBJS:.o=.d)
 
 
 $(TARGET): $(OBJ)
@@ -11,9 +12,10 @@ $(TARGET): $(OBJ)
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
+-include $(DEPS)
 
-main: shell.o src/main.c
-	$(CC) shell.o src/main.c -o main
+main: $(OBJ)
+	$(CC) $(OBJ) -o main
 
 clean:
 	rm -f $(TARGET) $(OBJ)
