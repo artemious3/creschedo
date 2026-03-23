@@ -33,5 +33,7 @@ void simulation_process_list(struct simulation *self);
 
 void simulation_cpu_list(struct simulation *self);
 
+bool simulation_is_empty(struct simulation *self);
+
 void simulation_free(struct simulation * self);
 

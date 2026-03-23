@@ -186,6 +186,10 @@ void simulation_cpu_list(struct simulation *self){
 	}
 }
 
+bool simulation_is_empty(struct simulation *self){
+	return self->max_prid == 0;
+}
+
 
 void simulation_free(struct simulation * self){
 	for(int i = 1; i <= self->max_prid; ++i){
