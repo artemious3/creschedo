@@ -1,3 +1,4 @@
+#include <limits.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -6,7 +7,7 @@
 #include "simulation.h"
 #include "utils.h"
 
-long parse_count(const char * s, bool * err){
+int parse_positive_int(const char * s, bool * err){
 	if(err == NULL){
 		PANIC("err must not be null");
 	}
@@ -20,6 +21,10 @@ long parse_count(const char * s, bool * err){
 
 	char* end;
 	long result = strtol(s, &end , 10);
+	if(result > (long)INT_MAX || result < (long)INT_MIN){
+		*err = true;
+		return 0;
+	}
 	if(end == s || *end != '\0' || result <= 0){
 		*err = true;
 		return 0;
@@ -56,7 +61,7 @@ static int run_process(void * ctx, const char * args[SHELL_ARGS_MAX]){
 		struct shell_input input = shell_split_into_words(line);
 		bool err;
 
-		long count = parse_count(input.words[0], &err);
+		long count = parse_positive_int(input.words[0], &err);
 		if(err){
 			eprintf("error: bad op count\nprogram> ");
 			continue;
@@ -86,6 +91,18 @@ static int process_list(void * ctx, const char * args[SHELL_ARGS_MAX]){
 
 static int process_remove(void * ctx, const char * args[SHELL_ARGS_MAX]){
 	struct simulation * sim = (struct simulation *)(ctx);
+	bool err;
+	int prid = parse_positive_int(args[0], &err);
+	if(err){
+		eprintf("error: invalid pid");
+	}
+
+	bool removed = simulation_process_remove(sim, prid);
+	if(!removed){
+		eprintf("error: process with given prid does not exist");
+	}
+
+	eprintf("process %d killed", prid);
 	return 0;
 }
 
@@ -96,6 +113,7 @@ int main(){
 	struct simulation sim = simulation_new();
 	struct shell sh = shell_new((void*)&sim);
 	shell_register_callback(&sh, "spawn", run_process);
+	shell_register_callback(&sh, "kill", process_remove);
 	shell_register_callback(&sh, "ps", process_list);
 	shell_start(&sh);
 }
