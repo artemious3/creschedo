@@ -1,5 +1,9 @@
-CC=gcc
-CFLAGS = -std=c23 -Wall -g -pedantic
+BUILD ?= debug
+CC=clang
+CFLAGS = -std=c23 -Wall -pedantic 
+CFLAGS.debug = -O0 -g -fsanitize=address
+CFLAGS.release = -O3 
+CFLAGS += $(CFLAGS.$(BUILD))
 TARGET = rbobin
 SRC = main.c shell.c program.c
 OBJ = $(SRC:.c=.o)
