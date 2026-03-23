@@ -161,11 +161,17 @@ bool simulation_process_remove(struct simulation *self, prid_t prid){
 }
 
 void simulation_process_list(struct simulation *self){
-	printf("%-6s%-10s%-10s\n", "ID", "State", "CPU");
+	printf("%-6s%-10s%-10s%-8s%-20s\n", "ID", "State", "CPU", "PC", "Program Length");
+
 	for(int i = 1; i <= self->max_prid; ++i){
 		struct process * proc = &self->processes[i];
 		if(PROCESS_EXISTS(*proc)){
-			printf("%-6d%-10s%-10d\n", i, process_state_to_string(proc->state), proc->cpu_id);
+			printf("%-6d%-10s%-10d%-8zu%-20zu\n", 
+					i,
+					process_state_to_string(proc->state),
+					proc->cpu_id,
+					proc->pc,
+					proc->program.length);
 		}
 	}
 
