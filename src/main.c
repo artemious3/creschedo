@@ -122,6 +122,16 @@ static int sim_tick(void * ctx, const char * args[SHELL_ARGS_MAX]){
 	return 0;
 }
 
+static int sim_run(void * ctx, const char * args[SHELL_ARGS_MAX]){
+	struct simulation * sim = (struct simulation *)(ctx);
+	long ticks_before = sim->t;
+	while(!simulation_is_empty(sim)){
+		simulation_tick(sim);
+	}
+	eprintln("simulation finished in %ld ticks", sim->t - ticks_before);
+	return 0;
+}
+
 
 int main(){
 	eprintln("CreSchedo - OS Scheduler Simulator.");
@@ -133,6 +143,7 @@ int main(){
 	shell_register_callback(&sh, "cpu", cpu_list);
 	shell_register_callback(&sh, "ps", process_list);
 	shell_register_callback(&sh, "tick", sim_tick);
+	shell_register_callback(&sh, "run", sim_run);
 	shell_start(&sh);
 	simulation_free(&sim);
 }
