@@ -81,7 +81,7 @@ static int run_process(void * ctx, const char * args[SHELL_ARGS_MAX]){
 		eprintln("error: program is empty, process was not spawned");
 	}
 
-	simulation_process_run(sim, prg);
+	simulation_process_spawn(sim, prg);
 
 	return 0;
 }

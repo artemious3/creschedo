@@ -116,7 +116,7 @@ void simulation_tick(struct simulation* self) {
 	self->t++;
 }
 
-bool simulation_process_run(struct simulation *self, struct program prg){
+bool simulation_process_spawn(struct simulation *self, struct program prg){
 	if(self->min_free_prid == SIMULATION_PROCESS_MAX){
 		return false;
 	}
