@@ -13,6 +13,10 @@
 
 #define NO_CPU (-1)
 
+//TODO : replace all simulation logs with `simulation_event` calls,
+#define SIMULATION_LOG(msg, ...) \
+	fprintf(stderr, msg "\n" __VA_OPT__(,) __VA_ARGS__); \
+
 static prid_t simulation_DBG_sched_first(struct simulation * self){
 	for(int i = 1; i <= self->max_prid; ++i){
 		struct process * proc = &self->processes[i];
@@ -54,6 +58,7 @@ static void simulation_cpu_assign(struct simulation * self, int cpu_id, prid_t p
 
 	self->cpus[cpu_id].prid = prid;
 	self->processes[prid].cpu_id = cpu_id; 
+	SIMULATION_LOG("process %d assigned to cpu %d", prid, cpu_id);
 }
 
 static void simulation_cpu_release(struct simulation * self, int cpu_id){
@@ -68,7 +73,7 @@ static void simulation_cpu_release(struct simulation * self, int cpu_id){
 	int older_prid = self->cpus[cpu_id].prid;
 	self->processes[older_prid].cpu_id = NO_CPU;
 	self->cpus[cpu_id].prid = 0;
-
+	SIMULATION_LOG("cpu %d went idle", cpu_id);
 }
 
 
@@ -88,6 +93,7 @@ void simulation_tick(struct simulation* self) {
 			}
 
 			process_state new_state = process_tick(proc, proc->cpu_id);
+			SIMULATION_LOG("process %d changed state to %s", i, process_state_to_string(new_state));
 			if((new_state == FINISHED || new_state == WAIT) && PROCESS_IS_CPU_ASSIGNED(*proc)){
 				simulation_cpu_release(self, proc->cpu_id);
 			}
@@ -135,6 +141,7 @@ bool simulation_process_spawn(struct simulation *self, struct program prg){
 		new_min_free_prid++;
 	}
 	self->min_free_prid = new_min_free_prid;
+	SIMULATION_LOG("process %d spawned", new_prid);
 
 	return true;
 }
@@ -158,6 +165,7 @@ bool simulation_process_remove(struct simulation *self, prid_t prid){
 	while(new_max_prid > 0 && !PROCESS_EXISTS(self->processes[new_max_prid])){
 		new_max_prid--;
 	}
+	SIMULATION_LOG("process %d removed", prid);
 
 	return true;
 }
