@@ -97,3 +97,11 @@ void simulation_process_list(struct simulation *self){
 }
 
 
+void simulation_free(struct simulation * self){
+	for(int i = 1; i <= self->max_prid; ++i){
+		struct process * proc = &self->processes[i];
+		if(PROCESS_EXISTS(*proc)){
+			process_free(proc);
+		}
+	}
+}

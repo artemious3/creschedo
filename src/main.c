@@ -116,4 +116,5 @@ int main(){
 	shell_register_callback(&sh, "kill", process_remove);
 	shell_register_callback(&sh, "ps", process_list);
 	shell_start(&sh);
+	simulation_free(&sim);
 }

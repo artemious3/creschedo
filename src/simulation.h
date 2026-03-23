@@ -31,4 +31,5 @@ bool simulation_process_remove(struct simulation *self, prid_t prid);
 
 void simulation_process_list(struct simulation *self);
 
+void simulation_free(struct simulation * self);
 
