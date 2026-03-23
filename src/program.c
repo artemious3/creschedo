@@ -22,17 +22,18 @@ void program_append_ops(struct program * self, unsigned int count, program_op op
 			PANIC("program max capacity exceeded");
 		}
 
-		program_op * ops_realloc = realloc(self->ops, self->capacity * 2);
+		program_op * ops_realloc = realloc(self->ops, sizeof(program_op)*(self->capacity * 2));
 
 		if(ops_realloc == NULL){
 			PANIC("realloc fail");
 		}
 
 		self->capacity *= 2;
+		self->ops = ops_realloc;
 	}
 
 	for(int i = 0; i < count; ++i){
-		self->ops[self->length-1 + i] = op;
+		self->ops[self->length + i] = op;
 	}
 	self->length += count;
 }
