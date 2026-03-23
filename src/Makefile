@@ -1,21 +1,18 @@
-CC=clang
-CFLAGS = -Wall -g -MMD -MP
+CC=gcc
+CFLAGS = -std=c23 -Wall -g -pedantic
 TARGET = rbobin
-OBJ = main.o shell.o program.o
-DEPS = $(OBJS:.o=.d)
+SRC = main.c shell.c program.c
+OBJ = $(SRC:.c=.o)
+DEP = $(SRC:.c=.d)
+TARGET = rbobin
 
+%.o: %.c
+	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
 
 $(TARGET): $(OBJ)
 	$(CC) $(CFLAGS) -o $(TARGET) $(OBJ)
 
-# Rule for object files
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
--include $(DEPS)
-
-main: $(OBJ)
-	$(CC) $(OBJ) -o main
+-include $(DEP)
 
 clean:
 	rm -f $(TARGET) $(OBJ)
