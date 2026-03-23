@@ -13,6 +13,16 @@
 
 #define NO_CPU (-1)
 
+static prid_t simulation_DBG_sched_first(struct simulation * self){
+	for(int i = 1; i <= self->max_prid; ++i){
+		struct process * proc = &self->processes[i];
+		if(PROCESS_EXISTS(*proc) && !PROCESS_IS_CPU_ASSIGNED(*proc)){
+			return i;
+		}
+	}
+	return 0;
+}
+
 struct simulation simulation_new(){
 	struct simulation self = {
 		.t = 0,
@@ -85,10 +95,19 @@ void simulation_tick(struct simulation* self) {
 	for(int i = 0; i < SIMULATION_CPU_NUMBER; ++i){
 
 		if(CPU_IS_IDLE(self->cpus[i])){
-			// do sched
+
+			prid_t new_prid = simulation_DBG_sched_first(self);
+			if(new_prid > 0){
+				simulation_cpu_assign(self, i, new_prid);
+			}
+
 		} else if (self->cpus[i].t_since_last_sched >= self->PREEMPT_TICKS){
 			simulation_cpu_release(self, i);
-			// do sched
+
+			prid_t new_prid = simulation_DBG_sched_first(self);
+			if(new_prid > 0){
+				simulation_cpu_assign(self, i, new_prid);
+			}
 		}
 	}
 
