@@ -40,7 +40,7 @@ void process_free(struct process * self){
   
        program_op op = self->program.ops[self->pc];
   
-       if (cpu_id != 0 && self->state == ACTIVE && op == OP_RUN) {
+       if (cpu_id >= 0 && self->state == ACTIVE && op == OP_RUN) {
            self->pc++; // Process uses CPU
        } else if (self->state == WAIT && op == OP_WAIT) {
            self->pc++; // I/O progresses in background
