@@ -91,8 +91,8 @@ static int process_remove(void * ctx, const char * args[SHELL_ARGS_MAX]){
 
 
 int main(){
-	eprintf("CreSchedo - OS Scheduler Simulator.\n");
-	eprintf("Run `help` to get list of allowed commands\n");
+	eprintln("CreSchedo - OS Scheduler Simulator.");
+	eprintln("Run `help` to get list of allowed commands");
 	struct simulation sim = simulation_new();
 	struct shell sh = shell_new((void*)&sim);
 	shell_register_callback(&sh, "spawn", run_process);
