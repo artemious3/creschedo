@@ -2,6 +2,18 @@
 #include "utils.h"
 #include <stdio.h>
 
+const char * process_state_to_string(process_state state){
+	switch (state) {
+		case ACTIVE:
+			return "ACTIVE";
+		case READY:
+			return "READY";
+		case WAIT:
+			return "WAIT";
+		case FINISHED:
+			return "FINISHED";
+	}
+}
 
 struct process process_new(long pid, struct program prog){
 	struct process self = {

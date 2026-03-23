@@ -4,6 +4,8 @@
 #include "simulation.h"
 #include "utils.h"
 
+#define PROCESS_EXISTS(proc) ((proc).prid != 0)
+
 struct simulation simulation_new(){
 	struct simulation self = {
 		.t = 0,
@@ -18,10 +20,10 @@ struct simulation simulation_new(){
 
 void simulation_tick(struct simulation* self) {
 	self->t++;
-	for(int i = 1; i < self->max_prid; ++i){
+	for(int i = 1; i <= self->max_prid; ++i){
 		struct process * proc = &self->processes[i];
 
-		if(proc->prid != 0){
+		if(PROCESS_EXISTS(*proc)){
 			assert(i == proc->prid);
 
 			if(proc->cpu_id >= 0){
@@ -42,13 +44,21 @@ bool simulation_process_run(struct simulation *self, struct program prg){
 		return false;
 	}
 
-	self->processes[self->min_free_prid] = process_new(self->min_free_prid, prg);
+	prid_t new_prid = self->min_free_prid;
+
+	self->processes[new_prid] = process_new(self->min_free_prid, prg);
+
+	if(self->max_prid < new_prid){
+		self->max_prid = new_prid;
+	}
 
 	prid_t new_min_free_prid = self->min_free_prid+1;
-	while(new_min_free_prid < SIMULATION_PROCESS_MAX && self->processes[new_min_free_prid].prid != 0){
+	while(new_min_free_prid < SIMULATION_PROCESS_MAX &&
+			PROCESS_EXISTS(self->processes[new_min_free_prid])){
 		new_min_free_prid++;
 	}
 	self->min_free_prid = new_min_free_prid;
+
 	return true;
 }
 
@@ -66,9 +76,24 @@ bool simulation_process_remove(struct simulation *self, prid_t prid){
 	if(prid < self->min_free_prid){
 		self->min_free_prid = prid;
 	}
-	
+
+	prid_t new_max_prid = self->max_prid-1;
+	while(new_max_prid > 0 && !PROCESS_EXISTS(self->processes[new_max_prid])){
+		new_max_prid--;
+	}
 
 	return true;
+}
+
+void simulation_process_list(struct simulation *self){
+	printf("%-6s%-10s%-10s\n", "ID", "State", "CPU");
+	for(int i = 1; i <= self->max_prid; ++i){
+		struct process * proc = &self->processes[i];
+		if(PROCESS_EXISTS(*proc)){
+			printf("%-6d%-10s%-10d\n", i, process_state_to_string(proc->state), proc->cpu_id);
+		}
+	}
+
 }
 
 

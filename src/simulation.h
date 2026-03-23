@@ -1,4 +1,3 @@
-
 #include "process.h"
 #include <stdbool.h>
 
@@ -6,7 +5,7 @@
 #define SIMULATION_PROCESS_MAX 512
 
 struct cpu {
-	pid_t prid;
+	prid_t prid;
 	long t_since_last_sched;
 };
 
@@ -16,8 +15,8 @@ struct simulation {
 
   struct cpu cpus[SIMULATION_CPU_NUMBER];
 
-  pid_t min_free_prid;
-	pid_t max_prid;
+  prid_t min_free_prid;
+	prid_t max_prid;
 
 	long PREEMPT_TICKS;
 };
@@ -29,5 +28,7 @@ void simulation_tick(struct simulation *self);
 bool simulation_process_run(struct simulation *self, struct program prg);
 
 bool simulation_process_remove(struct simulation *self, prid_t prid);
+
+void simulation_process_list(struct simulation *self);
 
 

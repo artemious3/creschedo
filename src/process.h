@@ -5,8 +5,10 @@ typedef unsigned int prid_t;
 
 typedef enum {ACTIVE, READY, WAIT, FINISHED } process_state;
 
+const char * process_state_to_string(process_state state);
+
 struct process {
-  pid_t prid;
+  prid_t prid;
   process_state state;
   struct program program;
   size_t pc;

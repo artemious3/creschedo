@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "shell.h"
 #include "program.h"
+#include "simulation.h"
 #include "utils.h"
 
 long parse_count(const char * s, bool * err){
@@ -46,6 +47,7 @@ program_op parse_op(const char * s, bool * err){
 }
 
 static int run_process(void * ctx, const char * args[SHELL_ARGS_MAX]){
+	struct simulation * sim = (struct simulation *)(ctx);
 	char line[16];
 	struct program prg = program_new();
 	
@@ -70,9 +72,15 @@ static int run_process(void * ctx, const char * args[SHELL_ARGS_MAX]){
 		printf("program> ");
 	}
 
-	program_list(&prg);
-	program_free(&prg);
+	simulation_process_run(sim, prg);
 
+	return 0;
+}
+
+
+static int process_list(void * ctx, const char * args[SHELL_ARGS_MAX]){
+	struct simulation * sim = (struct simulation *)(ctx);
+	simulation_process_list(sim);
 	return 0;
 }
 
@@ -81,7 +89,9 @@ static int run_process(void * ctx, const char * args[SHELL_ARGS_MAX]){
 int main(){
 	printf("CreSchedo - OS Scheduler Simulator.\n");
 	printf("Run `help` to get list of allowed commands\n");
-	struct shell sh = shell_new(NULL);
+	struct simulation sim = simulation_new();
+	struct shell sh = shell_new((void*)&sim);
 	shell_register_callback(&sh, "run", run_process);
+	shell_register_callback(&sh, "ps", process_list);
 	shell_start(&sh);
 }

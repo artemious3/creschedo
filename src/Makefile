@@ -5,7 +5,7 @@ CFLAGS.debug = -O0 -g -fsanitize=address
 CFLAGS.release = -O3 
 CFLAGS += $(CFLAGS.$(BUILD))
 TARGET = creschedo
-SRC = main.c shell.c program.c
+SRC = main.c shell.c program.c simulation.c process.c
 OBJ = $(SRC:.c=.o)
 DEP = $(SRC:.c=.d)
 
