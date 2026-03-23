@@ -86,7 +86,7 @@ void simulation_tick(struct simulation* self) {
 			}
 
 			process_state new_state = process_tick(proc, proc->cpu_id);
-			if(new_state == FINISHED || new_state == WAIT){
+			if((new_state == FINISHED || new_state == WAIT) && PROCESS_IS_CPU_ASSIGNED(*proc)){
 				simulation_cpu_release(self, proc->cpu_id);
 			}
 		}
