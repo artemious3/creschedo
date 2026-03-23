@@ -36,7 +36,7 @@ struct simulation simulation_new(){
 }
 
 static void simulation_cpu_assign(struct simulation * self, int cpu_id, prid_t prid){
-	if(prid <= 0 || prid > SIMULATION_CPU_NUMBER){
+	if(prid <= 0 || prid >= SIMULATION_PROCESS_MAX){
 		PANIC("invalid process id");
 	}
 	if(!PROCESS_EXISTS(self->processes[prid])){
@@ -73,6 +73,8 @@ static void simulation_cpu_release(struct simulation * self, int cpu_id){
 
 
 void simulation_tick(struct simulation* self) {
+
+
 	for(int i = 1; i <= self->max_prid; ++i){
 		struct process * proc = &self->processes[i];
 		if(PROCESS_EXISTS(*proc)){
