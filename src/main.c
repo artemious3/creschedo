@@ -85,13 +85,12 @@ static int process_list(void * ctx, const char * args[SHELL_ARGS_MAX]){
 }
 
 
-
 int main(){
 	printf("CreSchedo - OS Scheduler Simulator.\n");
 	printf("Run `help` to get list of allowed commands\n");
 	struct simulation sim = simulation_new();
 	struct shell sh = shell_new((void*)&sim);
-	shell_register_callback(&sh, "run", run_process);
+	shell_register_callback(&sh, "spawn", run_process);
 	shell_register_callback(&sh, "ps", process_list);
 	shell_start(&sh);
 }
