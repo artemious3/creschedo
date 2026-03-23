@@ -96,6 +96,13 @@ void simulation_process_list(struct simulation *self){
 
 }
 
+void simulation_cpu_list(struct simulation *self){
+	printf("%-6s%-10s%-30s\n", "CPU", "PRID", "Time since last schedule");
+	for(int i = 0; i < SIMULATION_CPU_NUMBER; ++i){
+		printf("%-6d%-10d%-30ld\n", i, self->cpus[i].prid, self->cpus[i].t_since_last_sched);
+	}
+}
+
 
 void simulation_free(struct simulation * self){
 	for(int i = 1; i <= self->max_prid; ++i){

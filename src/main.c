@@ -106,6 +106,12 @@ static int process_remove(void * ctx, const char * args[SHELL_ARGS_MAX]){
 	return 0;
 }
 
+static int cpu_list(void * ctx, const char * args[SHELL_ARGS_MAX]){
+	struct simulation * sim = (struct simulation *)(ctx);
+	simulation_cpu_list(sim);
+	return 0;
+}
+
 
 int main(){
 	eprintln("CreSchedo - OS Scheduler Simulator.");
@@ -114,6 +120,7 @@ int main(){
 	struct shell sh = shell_new((void*)&sim);
 	shell_register_callback(&sh, "spawn", run_process);
 	shell_register_callback(&sh, "kill", process_remove);
+	shell_register_callback(&sh, "cpu", cpu_list);
 	shell_register_callback(&sh, "ps", process_list);
 	shell_start(&sh);
 	simulation_free(&sim);
