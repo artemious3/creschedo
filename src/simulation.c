@@ -6,6 +6,13 @@
 
 #define PROCESS_EXISTS(proc) ((proc).prid != 0)
 
+#define PROCESS_IS_CPU_ASSIGNED(proc) ((proc).cpu_id >= 0)
+
+#define CPU_IS_BUSY(cpu) ((cpu).prid != 0)
+#define CPU_IS_IDLE(cpu) (!CPU_IS_BUSY((cpu)))
+
+#define NO_CPU (-1)
+
 struct simulation simulation_new(){
 	struct simulation self = {
 		.t = 0,
@@ -18,25 +25,74 @@ struct simulation simulation_new(){
 	return self;
 }
 
+static void simulation_cpu_assign(struct simulation * self, int cpu_id, prid_t prid){
+	if(prid <= 0 || prid > SIMULATION_CPU_NUMBER){
+		PANIC("invalid process id");
+	}
+	if(!PROCESS_EXISTS(self->processes[prid])){
+		PANIC("process does not exist");
+	}
+	if(cpu_id < 0 || cpu_id > SIMULATION_CPU_NUMBER){
+		PANIC("invalid cpu id");
+	}
+	if(CPU_IS_BUSY(self->cpus[cpu_id])){
+		PANIC("cpu must be idle in time of assignment");
+	}
+	if(PROCESS_IS_CPU_ASSIGNED(self->processes[prid])){
+		PANIC("cpu is already assigned to given process");
+	}
+
+	self->cpus[cpu_id].prid = prid;
+	self->processes[prid].cpu_id = cpu_id; 
+}
+
+static void simulation_cpu_release(struct simulation * self, int cpu_id){
+
+	if(cpu_id < 0 || cpu_id > SIMULATION_CPU_NUMBER){
+		PANIC("invalid cpu id");
+	}
+	if(CPU_IS_IDLE(self->cpus[cpu_id])){
+		PANIC("cpu must is already idle");
+	}
+
+	int older_prid = self->cpus[cpu_id].prid;
+	self->processes[older_prid].cpu_id = NO_CPU;
+	self->cpus[cpu_id].prid = 0;
+
+}
+
+
 void simulation_tick(struct simulation* self) {
-	self->t++;
 	for(int i = 1; i <= self->max_prid; ++i){
 		struct process * proc = &self->processes[i];
-
 		if(PROCESS_EXISTS(*proc)){
 			assert(i == proc->prid);
 
-			if(proc->cpu_id >= 0){
-				if(self->PREEMPT_TICKS != 0 && 
-					 self->cpus[proc->cpu_id].t_since_last_sched  >= self->PREEMPT_TICKS){
-					PANIC("TODO : implement preemptive scheduling");
-				}
+			// remove process 1 tick later after
+			// it has finished
+			if(proc->state == FINISHED){
+				simulation_process_remove(self, i);
+				continue;
 			}
 
 			process_state new_state = process_tick(proc, proc->cpu_id);
-
+			if(new_state == FINISHED || new_state == WAIT){
+				simulation_cpu_release(self, proc->cpu_id);
+			}
 		}
 	}
+
+	for(int i = 0; i < SIMULATION_CPU_NUMBER; ++i){
+
+		if(CPU_IS_IDLE(self->cpus[i])){
+			// do sched
+		} else if (self->cpus[i].t_since_last_sched >= self->PREEMPT_TICKS){
+			simulation_cpu_release(self, i);
+			// do sched
+		}
+	}
+
+	self->t++;
 }
 
 bool simulation_process_run(struct simulation *self, struct program prg){
