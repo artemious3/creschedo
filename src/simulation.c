@@ -79,7 +79,6 @@ static void simulation_cpu_release(struct simulation * self, int cpu_id){
 
 void simulation_tick(struct simulation* self) {
 
-
 	for(int i = 1; i <= self->max_prid; ++i){
 		struct process * proc = &self->processes[i];
 		if(PROCESS_EXISTS(*proc)){
@@ -118,6 +117,7 @@ void simulation_tick(struct simulation* self) {
 			}
 		}
 	}
+
 
 	self->t++;
 }
@@ -165,6 +165,7 @@ bool simulation_process_remove(struct simulation *self, prid_t prid){
 	while(new_max_prid > 0 && !PROCESS_EXISTS(self->processes[new_max_prid])){
 		new_max_prid--;
 	}
+	self->max_prid = new_max_prid;
 	SIMULATION_LOG("process %d removed", prid);
 
 	return true;
