@@ -14,8 +14,38 @@
 #define NO_CPU (-1)
 
 //TODO : replace all simulation logs with `simulation_event` calls,
-#define SIMULATION_LOG(msg, ...) \
-	fprintf(stderr, msg "\n" __VA_OPT__(,) __VA_ARGS__); \
+
+
+#define SIMULATION_LOG(tag,format,...) \
+	fprintf(stderr, "[%6ld] [%10s] " format "\n", self->t, tag  __VA_OPT__(,) __VA_ARGS__);
+
+static void simulation_report_event(struct simulation * self, struct simulation_event ev){
+
+	switch (ev.type) {
+		case PROCESS_SPAWNED:
+			SIMULATION_LOG("PROCESS","prid spawned");
+			break;
+		case PROCESS_REMOVED:
+			SIMULATION_LOG("PROCESS", "prid %d removed", ev.prid);
+			break;
+		case PROCESS_CHANGED_STATE:
+			SIMULATION_LOG("PROCESS", "prid %d changed state : %s -> %s",
+					ev.prid,
+					process_state_to_string(ev.process_old_state),
+					process_state_to_string(ev.process_new_state));
+			break;
+
+		case CPU_TIMER_OVERFLOW:
+			SIMULATION_LOG("CPU", "cpuid %d timer overflow (process %d)", ev.cpuid, ev.prid);
+			break;
+		case CPU_ASSIGNED:
+			SIMULATION_LOG("CPU", "cpuid %d assigned to prid %d", ev.cpuid, ev.prid);
+			break;
+		case CPU_RELEASED:
+			SIMULATION_LOG("CPU", "cpuid %d released", ev.cpuid);
+			break;
+	}
+}
 
 static prid_t simulation_DBG_sched_first(struct simulation * self){
 	for(int i = 1; i <= self->max_prid; ++i){
@@ -58,7 +88,9 @@ static void simulation_cpu_assign(struct simulation * self, int cpu_id, prid_t p
 
 	self->cpus[cpu_id].prid = prid;
 	self->processes[prid].cpu_id = cpu_id; 
-	SIMULATION_LOG("process %d assigned to cpu %d", prid, cpu_id);
+
+	struct simulation_event ev = {.type = CPU_ASSIGNED, .cpuid = cpu_id, .prid = prid};
+	simulation_report_event(self, ev);
 }
 
 static void simulation_cpu_release(struct simulation * self, int cpu_id){
@@ -73,7 +105,9 @@ static void simulation_cpu_release(struct simulation * self, int cpu_id){
 	int older_prid = self->cpus[cpu_id].prid;
 	self->processes[older_prid].cpu_id = NO_CPU;
 	self->cpus[cpu_id].prid = 0;
-	SIMULATION_LOG("cpu %d went idle", cpu_id);
+
+	struct simulation_event ev = {.type = CPU_RELEASED, .cpuid = cpu_id, .prid = older_prid};
+	simulation_report_event(self, ev);
 }
 
 
@@ -91,8 +125,18 @@ void simulation_tick(struct simulation* self) {
 				continue;
 			}
 
+			process_state old_state = proc->state;
 			process_state new_state = process_tick(proc, proc->cpu_id);
-			SIMULATION_LOG("process %d changed state to %s", i, process_state_to_string(new_state));
+			if(old_state != new_state){
+						struct simulation_event ev = {
+							.type = PROCESS_CHANGED_STATE,
+							.prid = i,
+							.process_old_state = old_state,
+							.process_new_state = new_state
+						};
+						simulation_report_event(self, ev);
+
+			}
 			if((new_state == FINISHED || new_state == WAIT) && PROCESS_IS_CPU_ASSIGNED(*proc)){
 				simulation_cpu_release(self, proc->cpu_id);
 			}
@@ -102,15 +146,16 @@ void simulation_tick(struct simulation* self) {
 	for(int i = 0; i < SIMULATION_CPU_NUMBER; ++i){
 
 		if(CPU_IS_IDLE(self->cpus[i])){
-
 			prid_t new_prid = simulation_DBG_sched_first(self);
 			if(new_prid > 0){
 				simulation_cpu_assign(self, i, new_prid);
 			}
 
 		} else if (self->cpus[i].t_since_last_sched >= self->PREEMPT_TICKS){
-			simulation_cpu_release(self, i);
+			struct simulation_event ev = {.type = CPU_TIMER_OVERFLOW, .cpuid = i, .prid = self->cpus[i].prid};
+			simulation_report_event(self, ev);
 
+			simulation_cpu_release(self, i);
 			prid_t new_prid = simulation_DBG_sched_first(self);
 			if(new_prid > 0){
 				simulation_cpu_assign(self, i, new_prid);
@@ -140,7 +185,8 @@ bool simulation_process_spawn(struct simulation *self, struct program prg){
 		new_min_free_prid++;
 	}
 	self->min_free_prid = new_min_free_prid;
-	SIMULATION_LOG("process %d spawned", new_prid);
+	struct simulation_event ev = {.type = PROCESS_SPAWNED, .prid = new_prid};
+	simulation_report_event(self, ev);
 
 	return true;
 }
@@ -165,7 +211,8 @@ bool simulation_process_remove(struct simulation *self, prid_t prid){
 		new_max_prid--;
 	}
 	self->max_prid = new_max_prid;
-	SIMULATION_LOG("process %d removed", prid);
+	struct simulation_event ev = {.type = PROCESS_REMOVED, .prid = prid};
+	simulation_report_event(self, ev);
 
 	return true;
 }
