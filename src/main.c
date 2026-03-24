@@ -2,10 +2,12 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "shell.h"
 #include "program.h"
 #include "simulation.h"
 #include "utils.h"
+#include "log.h"
 
 int parse_positive_int(const char * s, bool * err){
 	if(err == NULL){
@@ -132,8 +134,23 @@ static int sim_tick(void * ctx, FILE * _, const char * args[SHELL_ARGS_MAX]){
 static int sim_run(void * ctx, FILE * _, const char * args[SHELL_ARGS_MAX]){
 	struct simulation * sim = (struct simulation *)(ctx);
 	long ticks_before = sim->t;
+
+	log_callback_t log = log_nop;
+	if(args[0] != NULL){
+		if( strcmp(args[0], "show_cpu") == 0){
+			log_simulation_cpu_flow_header(sim);
+			log = log_simulation_cpu_flow_line;
+		} else if( strcmp(args[0], "show_proc") == 0){
+			log_simulation_process_flow_header(sim);
+			log = log_simulation_process_flow_line;
+		} else {
+			eprintln("warning: unkown logging option %s", args[0]);
+		}
+	} 
+
 	while(!simulation_is_empty(sim)){
 		simulation_tick(sim);
+		log(sim);
 	}
 	eprintln("simulation finished in %ld ticks", sim->t - ticks_before);
 	return 0;

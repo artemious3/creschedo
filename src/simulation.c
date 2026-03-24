@@ -16,8 +16,10 @@
 //TODO : replace all simulation logs with `simulation_event` calls,
 
 
-#define SIMULATION_LOG(tag,format,...) \
-	fprintf(stderr, "[%6ld] [%10s] " format "\n", self->t, tag  __VA_OPT__(,) __VA_ARGS__);
+// #define SIMULATION_LOG(tag,format,...) \
+// 	fprintf(stderr, "[%6ld] [%10s] " format "\n", self->t, tag  __VA_OPT__(,) __VA_ARGS__);
+
+#define SIMULATION_LOG(tag,format,...) 
 
 static void simulation_report_event(struct simulation * self, struct simulation_event ev){
 
