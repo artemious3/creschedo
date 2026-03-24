@@ -6,6 +6,7 @@
 #include "shell.h"
 #include "utils.h"
 
+
 static unsigned long djb2_hash(const char *str) {
     unsigned long hash = 5381; 
     int c;
@@ -61,6 +62,7 @@ static cmd_callback_t shell_get_callback(struct shell* self, const char * cmd){
 
 struct shell_input shell_split_into_words(char *raw_cmd) {
 
+
   struct shell_input self = {.words = {NULL}, .too_many_words = false};
 
   char *c = raw_cmd;
@@ -106,14 +108,20 @@ struct shell_input shell_split_into_words(char *raw_cmd) {
   return self;
 }
 
-void shell_start(struct shell * self) {
+void shell_start(struct shell * self, FILE * stream) {
+
+	if(stream == NULL){
+		stream = stdin;
+	}
+
 	char raw_input[256];
   while (1) {
-    eprintf("> ");
+		if(stream == stdin)
+			eprintf("> ");
 
 		// if encountered EOF or an error occured,
 		// stop the shell
-		if ( fgets(raw_input, 256, stdin) == NULL) {
+		if ( fgets(raw_input, 256, stream) == NULL) {
 			break;
 		}
 
@@ -124,6 +132,18 @@ void shell_start(struct shell * self) {
 			continue;
 		}
 
+		if(input.words[0][0] == '@'){
+			FILE * subinput = fopen(input.words[0]+1, "r");
+			if(subinput == NULL){
+				eprintln("error: failed to open file %s", input.words[0]+1);
+			} else {
+				shell_start(self, subinput);
+				fclose(subinput);
+			}
+			continue;
+		}
+
+
 		if(input.too_many_words){
 			eprintln("too many arguments, maximum is %d", SHELL_ARGS_MAX);
 			continue;
@@ -133,7 +153,7 @@ void shell_start(struct shell * self) {
 		if(callback == NULL){
 			eprintf("unkown command: %s\n", input.words[0]);
 		} else {
-			callback(self->context, &input.words[1]);
+			callback(self->context, stream, &input.words[1]);
 			eprintln("");
 		}
 

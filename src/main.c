@@ -51,13 +51,16 @@ program_op parse_op(const char * s, bool * err){
 	}
 }
 
-static int run_process(void * ctx, const char * args[SHELL_ARGS_MAX]){
+static int run_process(void * ctx, FILE * istream, const char * args[SHELL_ARGS_MAX]){
 	struct simulation * sim = (struct simulation *)(ctx);
 	char line[16];
 	struct program prg = program_new();
 	
-	eprintf("program> ");
-	while ( fgets(line, 15, stdin) != NULL && line[0] != '\n' ){
+	if(istream == stdin){
+		eprintf("program> ");
+	}
+
+	while ( fgets(line, 15, istream) != NULL && line[0] != '\n' ){
 		struct shell_input input = shell_split_into_words(line);
 		bool err;
 
@@ -74,7 +77,10 @@ static int run_process(void * ctx, const char * args[SHELL_ARGS_MAX]){
 		}
 
 		program_append_ops(&prg, count, op);
-		eprintf("program> ");
+
+		if(istream == stdin){
+			eprintf("program> ");
+		}
 	}
 
 	if(prg.length == 0){
@@ -88,13 +94,13 @@ static int run_process(void * ctx, const char * args[SHELL_ARGS_MAX]){
 }
 
 
-static int process_list(void * ctx, const char * args[SHELL_ARGS_MAX]){
+static int process_list(void * ctx, FILE * _, const char * args[SHELL_ARGS_MAX]){
 	struct simulation * sim = (struct simulation *)(ctx);
 	simulation_process_list(sim);
 	return 0;
 }
 
-static int process_remove(void * ctx, const char * args[SHELL_ARGS_MAX]){
+static int process_remove(void * ctx, FILE * _, const char * args[SHELL_ARGS_MAX]){
 	struct simulation * sim = (struct simulation *)(ctx);
 	bool err;
 	int prid = parse_positive_int(args[0], &err);
@@ -111,19 +117,19 @@ static int process_remove(void * ctx, const char * args[SHELL_ARGS_MAX]){
 	return 0;
 }
 
-static int cpu_list(void * ctx, const char * args[SHELL_ARGS_MAX]){
+static int cpu_list(void * ctx, FILE * _, const char * args[SHELL_ARGS_MAX]){
 	struct simulation * sim = (struct simulation *)(ctx);
 	simulation_cpu_list(sim);
 	return 0;
 }
 
-static int sim_tick(void * ctx, const char * args[SHELL_ARGS_MAX]){
+static int sim_tick(void * ctx, FILE * _, const char * args[SHELL_ARGS_MAX]){
 	struct simulation * sim = (struct simulation *)(ctx);
 	simulation_tick(sim);
 	return 0;
 }
 
-static int sim_run(void * ctx, const char * args[SHELL_ARGS_MAX]){
+static int sim_run(void * ctx, FILE * _, const char * args[SHELL_ARGS_MAX]){
 	struct simulation * sim = (struct simulation *)(ctx);
 	long ticks_before = sim->t;
 	while(!simulation_is_empty(sim)){
@@ -145,6 +151,6 @@ int main(){
 	shell_register_callback(&sh, "ps", process_list);
 	shell_register_callback(&sh, "tick", sim_tick);
 	shell_register_callback(&sh, "run", sim_run);
-	shell_start(&sh);
+	shell_start(&sh, stdin);
 	simulation_free(&sim);
 }
