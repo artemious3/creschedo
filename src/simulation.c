@@ -206,7 +206,7 @@ bool simulation_process_remove(struct simulation *self, prid_t prid){
 		self->min_free_prid = prid;
 	}
 
-	prid_t new_max_prid = self->max_prid-1;
+	prid_t new_max_prid = self->max_prid;
 	while(new_max_prid > 0 && !PROCESS_EXISTS(self->processes[new_max_prid])){
 		new_max_prid--;
 	}
