@@ -1,7 +1,9 @@
 #include "process.h"
 #include <stdbool.h>
 
-#define SIMULATION_CPU_NUMBER 8
+#ifndef SIMULATION_CPU_NUMBER
+#define SIMULATION_CPU_NUMBER 4
+#endif
 #define SIMULATION_PROCESS_MAX 512
 
 struct cpu {
