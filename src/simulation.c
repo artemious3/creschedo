@@ -150,8 +150,14 @@ void simulation_tick(struct simulation* self) {
 		if(CPU_IS_IDLE(self->cpus[i])){
 			prid_t new_prid = simulation_DBG_sched_first(self);
 			if(new_prid > 0){
+				// TODO : make separate function, like `simulation_schedule`
 				simulation_cpu_assign(self, i, new_prid);
+				process_state state = process_tick(&self->processes[new_prid], self->processes[new_prid].cpu_id);
+				if(state != ACTIVE){
+					eprintln("warning: scheduler selected process %d, but its next state was %s", new_prid, process_state_to_string(state))
+				}
 			}
+
 
 		} else if (self->cpus[i].t_since_last_sched >= self->PREEMPT_TICKS){
 			struct simulation_event ev = {.type = CPU_TIMER_OVERFLOW, .cpuid = i, .prid = self->cpus[i].prid};
