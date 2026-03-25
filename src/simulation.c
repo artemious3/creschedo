@@ -128,7 +128,7 @@ void simulation_tick(struct simulation* self) {
 			}
 
 			process_state old_state = proc->state;
-			process_state new_state = process_tick(proc, proc->cpu_id);
+			process_state new_state = process_tick(proc);
 			if(old_state != new_state){
 						struct simulation_event ev = {
 							.type = PROCESS_CHANGED_STATE,
@@ -152,7 +152,7 @@ void simulation_tick(struct simulation* self) {
 			if(new_prid > 0){
 				// TODO : make separate function, like `simulation_schedule`
 				simulation_cpu_assign(self, i, new_prid);
-				process_state state = process_tick(&self->processes[new_prid], self->processes[new_prid].cpu_id);
+				process_state state = process_tick(&self->processes[new_prid]);
 				if(state != ACTIVE){
 					eprintln("warning: scheduler selected process %d, but its next state was %s", new_prid, process_state_to_string(state))
 				}

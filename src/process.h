@@ -17,7 +17,7 @@ struct process {
 	int cpu_id;
 };
 
- process_state process_tick(struct process * self, int cpu_id);
+ process_state process_tick(struct process * self);
 
  struct process process_new(long pid, struct program prog);
 

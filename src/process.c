@@ -31,7 +31,7 @@ void process_free(struct process * self){
 	self->prid = 0;
 }
 
- process_state process_tick(struct process *self, int cpu_id) {
+ process_state process_tick(struct process *self) {
        if (self->state == FINISHED) return FINISHED;
        if (self->pc >= self->program.length) {
            self->state = FINISHED;
@@ -40,7 +40,7 @@ void process_free(struct process * self){
   
        program_op op = self->program.ops[self->pc];
   
-       if (cpu_id >= 0 && op == OP_RUN) {
+       if (self->cpu_id >= 0 && op == OP_RUN) {
            self->pc++; // Process uses CPU
        } else if (op == OP_WAIT) {
            self->pc++; // I/O progresses in background
@@ -55,7 +55,7 @@ void process_free(struct process * self){
   
 
        // 2. State Transition Logic
-       if (cpu_id >= 0) {
+       if (self->cpu_id >= 0) {
 
            if (self->state == READY) self->state = (op == OP_WAIT) ? WAIT : ACTIVE;
            else if (self->state == ACTIVE && op == OP_WAIT) self->state = WAIT;
@@ -66,7 +66,6 @@ void process_free(struct process * self){
            else if (self->state == WAIT && op == OP_RUN) self->state = READY;
        }
 
-			 self->cpu_id = cpu_id;
 			 return self->state;
    }
 
