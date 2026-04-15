@@ -6,6 +6,7 @@
 #include "shell.h"
 #include "program.h"
 #include "simulation.h"
+#include "scheduler_fcfs.h"
 #include "utils.h"
 #include "log.h"
 
@@ -160,7 +161,7 @@ static int sim_run(void * ctx, FILE * _, const char * args[SHELL_ARGS_MAX]){
 int main(){
 	eprintln("CreSchedo - OS Scheduler Simulator.");
 	eprintln("Run `help` to get list of allowed commands");
-	struct simulation sim = simulation_new();
+	struct simulation sim = simulation_new(scheduler_fcfs_new());
 	struct shell sh = shell_new((void*)&sim);
 	shell_register_callback(&sh, "spawn", run_process);
 	shell_register_callback(&sh, "kill", process_remove);

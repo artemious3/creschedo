@@ -1,5 +1,6 @@
 #pragma once
 #include "process.h"
+#include "scheduler.h"
 #include <stdbool.h>
 
 #ifndef SIMULATION_CPU_NUMBER
@@ -41,7 +42,7 @@ struct simulation {
 	long PREEMPT_TICKS;
 };
 
-struct simulation simulation_new();
+struct simulation simulation_new(struct scheduler sched);
 
 void simulation_tick(struct simulation *self);
 

@@ -16,10 +16,10 @@
 //TODO : replace all simulation logs with `simulation_event` calls,
 
 
-// #define SIMULATION_LOG(tag,format,...) \
-// 	fprintf(stderr, "[%6ld] [%10s] " format "\n", self->t, tag  __VA_OPT__(,) __VA_ARGS__);
+#define SIMULATION_LOG(tag,format,...) \
+	fprintf(stderr, "[%6ld] [%10s] " format "\n", self->t, tag  __VA_OPT__(,) __VA_ARGS__);
 
-#define SIMULATION_LOG(tag,format,...) 
+// #define SIMULATION_LOG(tag,format,...) 
 
 static void simulation_report_event(struct simulation * self, struct simulation_event ev){
 
@@ -59,7 +59,7 @@ static prid_t simulation_DBG_sched_first(struct simulation * self){
 	return 0;
 }
 
-struct simulation simulation_new(){
+struct simulation simulation_new(struct scheduler sched){
 	struct simulation self = {
 		.t = 0,
 		.cpus = {{.prid=0, .t_since_last_sched=0}},
