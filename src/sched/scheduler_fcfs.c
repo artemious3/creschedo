@@ -15,10 +15,9 @@ static void scheduler_fcfs_report_state(void * vself, prid_t prid, process_state
 	struct scheduler_fcfs * self = (struct scheduler_fcfs * )(vself);
 	switch (state) {
 		case ACTIVE:
-		case FINISHED:
 		case WAIT:
+		case FINISHED:
 			break;
-
 		case READY:
 			fifo_push(&self->fifo, prid);
 			break;

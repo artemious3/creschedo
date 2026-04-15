@@ -77,6 +77,16 @@ struct simulation simulation_new(struct scheduler sched){
 	return self;
 }
 
+prid_t simulation_schedule_process(struct simulation *self){
+	prid_t prid = scheduler_select(&self->sched);
+	while(prid != 0 && !PROCESS_EXISTS(self->processes[prid])){
+		// when process is killed, it's not removed from scheduler
+		// instead we check if scheduler selected process that still exists
+		prid = scheduler_select(&self->sched);
+	}
+	return prid;
+}
+
 static void simulation_cpu_assign(struct simulation * self, int cpu_id, prid_t prid){
 	if(prid <= 0 || prid >= SIMULATION_PROCESS_MAX){
 		PANIC("invalid process id");
@@ -154,7 +164,7 @@ void simulation_tick(struct simulation* self) {
 	for(int i = 0; i < SIMULATION_CPU_NUMBER; ++i){
 
 		if(CPU_IS_IDLE(self->cpus[i])){
-			prid_t new_prid = scheduler_select(&self->sched);
+			prid_t new_prid = simulation_schedule_process(self);
 			if(new_prid > 0){
 				// TODO : make separate function, like `simulation_schedule`
 				simulation_cpu_assign(self, i, new_prid);
@@ -170,7 +180,7 @@ void simulation_tick(struct simulation* self) {
 			simulation_report_event(self, ev);
 
 			simulation_cpu_release(self, i);
-			prid_t new_prid = scheduler_select(&self->sched);
+			prid_t new_prid = simulation_schedule_process(self);
 			if(new_prid > 0){
 				simulation_cpu_assign(self, i, new_prid);
 			}

@@ -47,6 +47,8 @@ struct simulation simulation_new(struct scheduler sched);
 
 void simulation_tick(struct simulation *self);
 
+prid_t simulation_schedule_process(struct simulation * self);
+
 bool simulation_process_spawn(struct simulation *self, struct program prg);
 
 bool simulation_process_kill(struct simulation *self, prid_t prid);
