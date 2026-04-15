@@ -49,7 +49,7 @@ void simulation_tick(struct simulation *self);
 
 bool simulation_process_spawn(struct simulation *self, struct program prg);
 
-bool simulation_process_remove(struct simulation *self, prid_t prid);
+bool simulation_process_kill(struct simulation *self, prid_t prid);
 
 void simulation_process_list(struct simulation *self);
 

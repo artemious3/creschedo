@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include "simulation.h"
+#include "process.h"
 #include "utils.h"
 
 #define PROCESS_EXISTS(proc) ((proc).prid != 0)
@@ -20,6 +21,8 @@
 // 	fprintf(stderr, "[%6ld] [%10s] " format "\n", self->t, tag  __VA_OPT__(,) __VA_ARGS__);
 //
 #define SIMULATION_LOG(tag,format,...) 
+
+static bool simulation_process_remove(struct simulation *self, prid_t prid);
 
 static void simulation_report_event(struct simulation * self, struct simulation_event ev){
 
@@ -202,7 +205,23 @@ bool simulation_process_spawn(struct simulation *self, struct program prg){
 	return true;
 }
 
-bool simulation_process_remove(struct simulation *self, prid_t prid){
+
+bool simulation_process_kill(struct simulation *self, prid_t prid){
+	if(prid >= SIMULATION_PROCESS_MAX || prid == 0 || self->processes[prid].prid == 0){
+		return false;
+	}
+	struct simulation_event ev = {
+		.type = PROCESS_CHANGED_STATE,
+		.prid = prid,
+		.process_old_state = self->processes[prid].state,
+		.process_new_state = FINISHED
+	};
+	self->processes[prid].state = FINISHED;
+	simulation_report_event(self, ev);
+	return true;
+}
+
+static bool simulation_process_remove(struct simulation *self, prid_t prid){
 	if(prid >= SIMULATION_PROCESS_MAX || prid == 0 || self->processes[prid].prid == 0){
 		return false;
 	}

@@ -103,7 +103,7 @@ static int process_list(void * ctx, FILE * _, const char * args[SHELL_ARGS_MAX])
 	return 0;
 }
 
-static int process_remove(void * ctx, FILE * _, const char * args[SHELL_ARGS_MAX]){
+static int process_kill(void * ctx, FILE * _, const char * args[SHELL_ARGS_MAX]){
 	struct simulation * sim = (struct simulation *)(ctx);
 	bool err;
 	int prid = parse_positive_int(args[0], &err);
@@ -111,8 +111,8 @@ static int process_remove(void * ctx, FILE * _, const char * args[SHELL_ARGS_MAX
 		eprintf("error: invalid pid");
 	}
 
-	bool removed = simulation_process_remove(sim, prid);
-	if(!removed){
+	bool killed = simulation_process_kill(sim, prid);
+	if(!killed){
 		eprintf("error: process with given prid does not exist");
 	}
 
@@ -164,7 +164,7 @@ int main(){
 	struct simulation sim = simulation_new(scheduler_fcfs_new());
 	struct shell sh = shell_new((void*)&sim);
 	shell_register_callback(&sh, "spawn", run_process);
-	shell_register_callback(&sh, "kill", process_remove);
+	shell_register_callback(&sh, "kill", process_kill);
 	shell_register_callback(&sh, "cpu", cpu_list);
 	shell_register_callback(&sh, "ps", process_list);
 	shell_register_callback(&sh, "tick", sim_tick);
