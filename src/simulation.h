@@ -38,6 +38,7 @@ struct simulation {
 
   prid_t min_free_prid;
 	prid_t max_prid;
+	struct scheduler sched;
 
 	long PREEMPT_TICKS;
 };
