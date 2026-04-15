@@ -10,10 +10,11 @@ struct fifo fifo_new(size_t cap){
 		PANIC("fifo must not have capacity %ld", cap);
 	}
 
-	prid_t * p = malloc(cap * sizeof(prid_t));
+	prid_t * mem = malloc(cap * sizeof(prid_t));
 	struct fifo fifo  = {
-		.tail = p,
-		.head = p,
+		.tail = mem,
+		.head = mem,
+		.mem = mem,
 		.capacity = cap,
 		.len = 0,
 	};
@@ -27,9 +28,12 @@ void fifo_push(struct fifo * self, prid_t val){
 		PANIC("fifo is full, can't push");
 	}
 
-	*(self->head) = val;
+	*(self->tail) = val;
 	self->len++;
-	self->head++;
+	self->tail++;
+	if(self->tail == self->mem + self->capacity){
+		self->tail = self->mem;
+	}
 }
 
 prid_t fifo_pop(struct fifo * self){
@@ -37,16 +41,20 @@ prid_t fifo_pop(struct fifo * self){
 		PANIC("fifo is empty, can't push");
 	}
 
-	self->head--;
+	prid_t val = (*self->head);
 	self->len--;
-	return (*self->head);
+	self->head++;
+	if(self->head == self->mem + self->capacity){
+		self->head = self->mem;
+	}
+	return val;
 }
 
 prid_t fifo_peek(struct fifo * self){
 	if(self->len == 0){
 		PANIC("can't peek from empty fifo");
 	}
-	return *(self->head-1);
+	return *(self->head);
 }
 
 bool fifo_full(const struct fifo * self ){
@@ -58,5 +66,5 @@ bool fifo_empty(const struct fifo * self ){
 }
 
 void fifo_free(struct fifo *  self){
-	free(self->tail);
+	free(self->mem);
 }

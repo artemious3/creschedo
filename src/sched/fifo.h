@@ -4,6 +4,7 @@
 struct fifo {
 	prid_t * tail;
 	prid_t * head;
+	prid_t * mem;
 	size_t capacity;
 	size_t len;
 };
