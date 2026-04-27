@@ -20,7 +20,7 @@
 // #define SIMULATION_LOG(tag,format,...) \
 // 	fprintf(stderr, "[%6ld] [%10s] " format "\n", self->t, tag  __VA_OPT__(,) __VA_ARGS__);
 //
-#define SIMULATION_LOG(tag,format,...) 
+#define SIMULATION_LOG(tag,format,...)
 
 static bool simulation_process_remove(struct simulation *self, prid_t prid);
 
@@ -29,7 +29,14 @@ static void simulation_report_event(struct simulation * self, struct simulation_
 	switch (ev.type) {
 		case PROCESS_SPAWNED:
 			SIMULATION_LOG("PROCESS","prid spawned");
-			scheduler_report_state(&self->sched, ev.prid, self->processes[ev.prid].state);
+		  if(self->processes[ev.prid].state == READY){
+				struct scheduler_process_descriptor pd = {
+				.prid = ev.prid,
+				.priority = 0, // TEMPORARY
+				.t_since = self->t
+				};
+				scheduler_report_ready(&self->sched, pd);
+			}
 			break;
 		case PROCESS_REMOVED:
 			SIMULATION_LOG("PROCESS", "prid %d removed", ev.prid);
@@ -39,7 +46,14 @@ static void simulation_report_event(struct simulation * self, struct simulation_
 					ev.prid,
 					process_state_to_string(ev.process_old_state),
 					process_state_to_string(ev.process_new_state));
-			scheduler_report_state(&self->sched, ev.prid, ev.process_new_state);
+			if(self->processes[ev.prid].state == READY){
+  			struct scheduler_process_descriptor pd = {
+  			.prid = ev.prid,
+  			.priority = 0, // TEMPORARY
+  			.t_since = self->t
+  			};
+  			scheduler_report_ready(&self->sched, pd);
+  		}
 			break;
 
 		case CPU_TIMER_OVERFLOW:
@@ -105,7 +119,7 @@ static void simulation_cpu_assign(struct simulation * self, int cpu_id, prid_t p
 	}
 
 	self->cpus[cpu_id].prid = prid;
-	self->processes[prid].cpu_id = cpu_id; 
+	self->processes[prid].cpu_id = cpu_id;
 
 	struct simulation_event ev = {.type = CPU_ASSIGNED, .cpuid = cpu_id, .prid = prid};
 	simulation_report_event(self, ev);
@@ -263,7 +277,7 @@ void simulation_process_list(struct simulation *self){
 	for(int i = 1; i <= self->max_prid; ++i){
 		struct process * proc = &self->processes[i];
 		if(PROCESS_EXISTS(*proc)){
-			printf("%-6d%-10s%-10d%-8zu%-20zu\n", 
+			printf("%-6d%-10s%-10d%-8zu%-20zu\n",
 					i,
 					process_state_to_string(proc->state),
 					proc->cpu_id,

@@ -1,21 +1,23 @@
 #include <stdlib.h>
 #include "process.h"
+#include "scheduler.h"
+
 
 struct fifo {
-	prid_t * tail;
-	prid_t * head;
-	prid_t * mem;
+	struct scheduler_process_descriptor * tail;
+	struct scheduler_process_descriptor * head;
+	struct scheduler_process_descriptor * mem;
 	size_t capacity;
 	size_t len;
 };
 
 struct fifo fifo_new(size_t cap);
 
-void fifo_push(struct fifo * self, prid_t val);
+void fifo_push(struct fifo * self, struct scheduler_process_descriptor);
 
-prid_t fifo_pop(struct fifo * self);
+struct scheduler_process_descriptor fifo_pop(struct fifo * self);
 
-prid_t fifo_peek(struct fifo * self);
+const struct scheduler_process_descriptor * fifo_peek(struct fifo * self);
 
 bool fifo_full(const struct fifo * self );
 

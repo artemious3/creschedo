@@ -10,7 +10,7 @@ struct fifo fifo_new(size_t cap){
 		PANIC("fifo must not have capacity %ld", cap);
 	}
 
-	prid_t * mem = malloc(cap * sizeof(prid_t));
+	struct scheduler_process_descriptor * mem = malloc(cap * sizeof(struct scheduler_process_descriptor));
 	struct fifo fifo  = {
 		.tail = mem,
 		.head = mem,
@@ -22,7 +22,7 @@ struct fifo fifo_new(size_t cap){
 	return fifo;
 }
 
-void fifo_push(struct fifo * self, prid_t val){
+void fifo_push(struct fifo * self, struct scheduler_process_descriptor val){
 
 	if(self->len == self->capacity){
 		PANIC("fifo is full, can't push");
@@ -36,12 +36,12 @@ void fifo_push(struct fifo * self, prid_t val){
 	}
 }
 
-prid_t fifo_pop(struct fifo * self){
+struct scheduler_process_descriptor fifo_pop(struct fifo * self){
 	if(self->len == 0){
 		PANIC("fifo is empty, can't push");
 	}
 
-	prid_t val = (*self->head);
+	struct scheduler_process_descriptor val = (*self->head);
 	self->len--;
 	self->head++;
 	if(self->head == self->mem + self->capacity){
@@ -50,11 +50,11 @@ prid_t fifo_pop(struct fifo * self){
 	return val;
 }
 
-prid_t fifo_peek(struct fifo * self){
+const struct scheduler_process_descriptor * fifo_peek(struct fifo * self){
 	if(self->len == 0){
 		PANIC("can't peek from empty fifo");
 	}
-	return *(self->head);
+	return self->head;
 }
 
 bool fifo_full(const struct fifo * self ){

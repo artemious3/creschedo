@@ -1,7 +1,7 @@
 #include "scheduler.h"
 
-void scheduler_report_state(struct scheduler* self, prid_t prid, process_state state){
-	self->_report_state(self->_data, prid, state);
+void scheduler_report_ready(struct scheduler* self, struct scheduler_process_descriptor pd){
+	self->_report_ready(self->_data, pd);
 }
 
 // note that select assumes that given process was made active
@@ -13,4 +13,3 @@ void scheduler_free(struct scheduler * self){
 	self->_free(self->_data);
 	free(self->_data);
 }
-
