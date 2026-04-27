@@ -3,7 +3,7 @@
 #include "simulation.h"
 
 
-void log_simulation_process_flow_line(struct simulation * sim){
+void log_simulation_process_flow_line(const struct simulation * sim){
 	for(int i = 1; i <= sim->max_prid; ++i){
 		if(sim->processes[i].prid != 0){
 			switch(sim->processes[i].state){
@@ -27,9 +27,9 @@ void log_simulation_process_flow_line(struct simulation * sim){
 	printf("\n");
 }
 
-void log_simulation_cpu_flow_line(struct simulation * sim){
+void log_simulation_cpu_flow_line(const struct simulation * sim){
 	for(int i = 0; i < SIMULATION_CPU_NUMBER; ++i){
-		struct cpu * cpu = &sim->cpus[i];
+		const struct cpu * cpu = &sim->cpus[i];
 
 		if(cpu->prid > 0){
 			printf("%-6d", cpu->prid);
@@ -40,7 +40,7 @@ void log_simulation_cpu_flow_line(struct simulation * sim){
 	printf("\n");
 }
 
-void log_simulation_process_flow_header(struct simulation * sim){
+void log_simulation_process_flow_header(const struct simulation * sim){
 	printf("<id> -active on cpu <id>;\nw - waiting;. - ready; F - finished\n");
 	for(int i = 1; i <= sim->max_prid; ++i){
 		printf("%-4d",i);
@@ -48,7 +48,7 @@ void log_simulation_process_flow_header(struct simulation * sim){
 	printf("\n");
 }
 
-void log_simulation_cpu_flow_header(struct simulation * sim){
+void log_simulation_cpu_flow_header(const struct simulation * sim){
 	for(int i = 0; i < SIMULATION_CPU_NUMBER; ++i){
 		printf("%-6d",i);
 	}
@@ -59,4 +59,4 @@ void log_simulation_cpu_flow_header(struct simulation * sim){
 	printf("\n");
 }
 
-void log_nop(struct simulation * _){}
+void log_nop(const struct simulation * _){}
