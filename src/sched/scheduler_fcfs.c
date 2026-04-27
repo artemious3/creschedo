@@ -2,13 +2,10 @@
 #include "process.h"
 #include <stdbool.h>
 #include <stdio.h>
+#include <string.h>
 #include "utils.h"
 #include "fifo.h"
 #include "scheduler_fcfs.h"
-
-struct scheduler_fcfs{
-	struct fifo fifo[SCHEDULER_FCFS_PRIORITIIES];
-};
 
 
 static void scheduler_fcfs_report_ready(void * vself, struct scheduler_process_descriptor pd){
@@ -47,12 +44,13 @@ struct scheduler scheduler_fcfs_new(){
 	}
 
 	struct scheduler sched = {
+	  .name = {0},
 		._data = (void*)data,
 		._select = &scheduler_fcfs_select,
 		._report_ready = &scheduler_fcfs_report_ready,
 		._free = &scheduler_fcfs_free,
 	};
-
+	strcpy(sched.name, "fcfs");
 	return sched;
 
 }

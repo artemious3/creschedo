@@ -11,6 +11,7 @@ struct scheduler_process_descriptor {
 // Convention: implementors of scheduler_<algorithm>_new functions allocate
 // underlying data with `malloc`.  It is freed by scheduler_free using `free`
 struct scheduler {
+  char name[16];
 	void * _data;
 	void (*_report_ready)(void* data, struct scheduler_process_descriptor);
 	prid_t (*_select)(void* data);

@@ -1,6 +1,9 @@
 #include <stdio.h>
+#include <string.h>
 #include "log.h"
 #include "simulation.h"
+#include "scheduler_fcfs.h"
+#include "fifo.h"
 
 
 void log_simulation_process_flow_line(const struct simulation * sim){
@@ -58,5 +61,35 @@ void log_simulation_cpu_flow_header(const struct simulation * sim){
 	}
 	printf("\n");
 }
+
+
+void log_simulation_sched_queues(const struct simulation * sim){
+  if(strcmp(sim->sched.name, "fcfs") != 0){
+    printf("UNSUPPORTED SCHEDULER TYPE : %.15s\n", sim->sched.name);
+    return;
+  }
+
+  printf("======== TICK %ld ========\n", sim->t);
+  const struct scheduler_fcfs * sched_data = (struct scheduler_fcfs*)(sim->sched._data);
+
+  for(int i = 0; i < SCHEDULER_FCFS_PRIORITIIES; ++i ){
+    printf("PRIO %-2d @ ", i);
+    const struct fifo * fifo = &sched_data->fifo[i];
+
+    const struct scheduler_process_descriptor * pd = fifo->head;
+
+    for(int i = 0; i < fifo->len; ++i){
+      printf("%4d| ", pd->prid);
+      pd++;
+      if(pd == fifo->mem + fifo->capacity){
+        pd = fifo->mem;
+      }
+    }
+    printf("\n");
+  }
+  printf("\n");
+}
+
+
 
 void log_nop(const struct simulation * _){}

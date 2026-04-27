@@ -31,7 +31,7 @@ int parse_positive_int(const char * s, bool * err){
 	if(end == s || *end != '\0' || result <= 0){
 		*err = true;
 		return 0;
-	} 
+	}
 	return result;
 }
 
@@ -58,7 +58,7 @@ static int run_process(void * ctx, FILE * istream, const char * args[SHELL_ARGS_
 	struct simulation * sim = (struct simulation *)(ctx);
 	char line[16];
 	struct program prg = program_new();
-	
+
 	if(istream == stdin){
 		eprintf("program> ");
 	}
@@ -144,10 +144,12 @@ static int sim_run(void * ctx, FILE * _, const char * args[SHELL_ARGS_MAX]){
 		} else if( strcmp(args[0], "show_proc") == 0){
 			log_simulation_process_flow_header(sim);
 			log = log_simulation_process_flow_line;
+		} else if (strcmp(args[0], "show_queues") == 0) {
+  		log = log_simulation_sched_queues;
 		} else {
 			eprintln("warning: unkown logging option %s", args[0]);
 		}
-	} 
+	}
 
 	while(!simulation_is_empty(sim)){
 		simulation_tick(sim);
