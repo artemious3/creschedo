@@ -1,6 +1,7 @@
 BUILD_TYPE ?= debug
 NCPU ?= 4
 
+B = build
 CC=clang
 SRC = main.c shell.c program.c simulation.c process.c log.c  \
 			sched/scheduler.c sched/fifo.c sched/scheduler_fcfs.c
@@ -12,11 +13,13 @@ INCLUDE= . ./sched/
 INCLUDE := $(foreach d, $(INCLUDE), -I$(abspath $d))
 
 CFLAGS += $(CFLAGS.$(BUILD_TYPE))
-OBJ = $(SRC:.c=.o)
-DEP = $(SRC:.c=.d)
+OBJ = $(patsubst %.c, $(B)/%.o, $(SRC))
+DEP = $(patsubst %.c, $(B)/%.d, $(SRC))
 
+$(B):
+	mkdir -p $(B) $(B)/sched
 
-%.o: %.c
+$(B)/%.o: %.c | $(B)
 	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@ $(INCLUDE)
 
 $(TARGET): $(OBJ)
@@ -25,4 +28,5 @@ $(TARGET): $(OBJ)
 -include $(DEP)
 
 clean:
-	rm -f $(TARGET) $(OBJ)
+	rm -f $(TARGET)
+	rm -r $(B)
