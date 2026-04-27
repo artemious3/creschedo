@@ -147,15 +147,18 @@ static int sim_tick(void * ctx, FILE * _, const char * args[SHELL_ARGS_MAX]){
 static int sim_run(void * ctx, FILE * _, const char * args[SHELL_ARGS_MAX]){
 	struct simulation * sim = (struct simulation *)(ctx);
 	long ticks_before = sim->t;
+	sim->LOG_ENABLED = true;
 
 	log_callback_t log = log_nop;
 	if(args[0] != NULL){
 		if( strcmp(args[0], "show_cpu") == 0){
 			log_simulation_cpu_flow_header(sim);
 			log = log_simulation_cpu_flow_line;
+			sim->LOG_ENABLED = false;
 		} else if( strcmp(args[0], "show_proc") == 0){
 			log_simulation_process_flow_header(sim);
 			log = log_simulation_process_flow_line;
+			sim->LOG_ENABLED = false;
 		} else if (strcmp(args[0], "show_queues") == 0) {
   		log = log_simulation_sched_queues;
 		} else {

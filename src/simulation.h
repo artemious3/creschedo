@@ -41,6 +41,7 @@ struct simulation {
 	struct scheduler sched;
 
 	long PREEMPT_TICKS;
+	bool LOG_ENABLED;
 };
 
 struct simulation simulation_new(struct scheduler sched);

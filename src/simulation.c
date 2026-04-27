@@ -17,10 +17,8 @@
 //TODO : replace all simulation logs with `simulation_event` calls,
 
 
-// #define SIMULATION_LOG(tag,format,...) \
-// 	fprintf(stderr, "[%6ld] [%10s] " format "\n", self->t, tag  __VA_OPT__(,) __VA_ARGS__);
-//
-#define SIMULATION_LOG(tag,format,...)
+#define SIMULATION_LOG(tag,format,...) \
+	if(self->LOG_ENABLED) fprintf(stderr, "[%6ld] [%10s] " format "\n", self->t, tag  __VA_OPT__(,) __VA_ARGS__);
 
 static bool simulation_process_remove(struct simulation *self, prid_t prid);
 
@@ -89,7 +87,8 @@ struct simulation simulation_new(struct scheduler sched){
 		.max_prid = 0,
 		.processes = {{.prid = 0}},
 		.PREEMPT_TICKS = 100,
-		.sched = sched
+		.sched = sched,
+		.LOG_ENABLED = false,
 	};
 	return self;
 }
