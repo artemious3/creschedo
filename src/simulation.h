@@ -49,7 +49,7 @@ void simulation_tick(struct simulation *self);
 
 prid_t simulation_schedule_process(struct simulation * self);
 
-bool simulation_process_spawn(struct simulation *self, struct program prg);
+bool simulation_process_spawn(struct simulation *self, struct program prg, unsigned int prio);
 
 bool simulation_process_kill(struct simulation *self, prid_t prid);
 
@@ -60,4 +60,3 @@ void simulation_cpu_list(struct simulation *self);
 bool simulation_is_empty(struct simulation *self);
 
 void simulation_free(struct simulation * self);
-

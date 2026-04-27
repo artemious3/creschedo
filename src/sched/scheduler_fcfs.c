@@ -11,7 +11,7 @@
 static void scheduler_fcfs_report_ready(void * vself, struct scheduler_process_descriptor pd){
 	struct scheduler_fcfs * self = (struct scheduler_fcfs * )(vself);
 	if(pd.priority >= SCHEDULER_FCFS_PRIORITIIES ){
-        PANIC("Invalid priority : %ud", pd.priority);
+	  pd.priority = SCHEDULER_FCFS_PRIORITIIES-1;
 	}
 	fifo_push(&self->fifo[pd.priority], pd);
 }

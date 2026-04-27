@@ -56,6 +56,18 @@ program_op parse_op(const char * s, bool * err){
 
 static int run_process(void * ctx, FILE * istream, const char * args[SHELL_ARGS_MAX]){
 	struct simulation * sim = (struct simulation *)(ctx);
+
+	bool err;
+	if(args[0] == NULL){
+   	printf("error: usage `spawn <PRIORITY>`\n");
+    return 1;
+	}
+	int prio = parse_positive_int(args[0], &err);
+	if(err){
+  	printf("error: invalid priority\n");
+    return 1;
+	}
+
 	char line[16];
 	struct program prg = program_new();
 
@@ -89,7 +101,7 @@ static int run_process(void * ctx, FILE * istream, const char * args[SHELL_ARGS_
 	if(prg.length == 0){
 		eprintln("error: program is empty, process was not spawned");
 	} else {
-		simulation_process_spawn(sim, prg);
+		simulation_process_spawn(sim, prg, prio);
 	}
 
 

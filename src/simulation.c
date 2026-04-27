@@ -27,35 +27,38 @@ static bool simulation_process_remove(struct simulation *self, prid_t prid);
 static void simulation_report_event(struct simulation * self, struct simulation_event ev){
 
 	switch (ev.type) {
-		case PROCESS_SPAWNED:
-			SIMULATION_LOG("PROCESS","prid spawned");
-		  if(self->processes[ev.prid].state == READY){
-				struct scheduler_process_descriptor pd = {
-				.prid = ev.prid,
-				.priority = 0, // TEMPORARY
-				.t_since = self->t
-				};
-				scheduler_report_ready(&self->sched, pd);
-			}
-			break;
-		case PROCESS_REMOVED:
-			SIMULATION_LOG("PROCESS", "prid %d removed", ev.prid);
-			break;
-		case PROCESS_CHANGED_STATE:
-			SIMULATION_LOG("PROCESS", "prid %d changed state : %s -> %s",
-					ev.prid,
-					process_state_to_string(ev.process_old_state),
-					process_state_to_string(ev.process_new_state));
-			if(self->processes[ev.prid].state == READY){
+		case PROCESS_SPAWNED:{
+  		SIMULATION_LOG("PROCESS","prid spawned");
+  		const struct process * p = &self->processes[ev.prid];
+  	  if(p->state == READY){
   			struct scheduler_process_descriptor pd = {
   			.prid = ev.prid,
-  			.priority = 0, // TEMPORARY
+  			.priority = p->priority, // TEMPORARY
   			.t_since = self->t
   			};
   			scheduler_report_ready(&self->sched, pd);
   		}
+  		break;
+		}
+		case PROCESS_REMOVED:
+			SIMULATION_LOG("PROCESS", "prid %d removed", ev.prid);
 			break;
-
+		case PROCESS_CHANGED_STATE:{
+  		SIMULATION_LOG("PROCESS", "prid %d changed state : %s -> %s",
+  				ev.prid,
+  				process_state_to_string(ev.process_old_state),
+  				process_state_to_string(ev.process_new_state));
+  		const struct process * p = &self->processes[ev.prid];
+  		if(p->state == READY){
+   			struct scheduler_process_descriptor pd = {
+   			.prid = ev.prid,
+   			.priority = p->priority, // TEMPORARY
+   			.t_since = self->t
+   			};
+   			scheduler_report_ready(&self->sched, pd);
+    		}
+  		break;
+		}
 		case CPU_TIMER_OVERFLOW:
 			SIMULATION_LOG("CPU", "cpuid %d timer overflow (process %d)", ev.cpuid, ev.prid);
 			break;
@@ -204,14 +207,14 @@ void simulation_tick(struct simulation* self) {
 	self->t++;
 }
 
-bool simulation_process_spawn(struct simulation *self, struct program prg){
+bool simulation_process_spawn(struct simulation *self, struct program prg, unsigned int prio){
 	if(self->min_free_prid == SIMULATION_PROCESS_MAX){
 		return false;
 	}
 
 	prid_t new_prid = self->min_free_prid;
 
-	self->processes[new_prid] = process_new(self->min_free_prid, prg);
+	self->processes[new_prid] = process_new(self->min_free_prid, prg, prio);
 
 	if(self->max_prid < new_prid){
 		self->max_prid = new_prid;

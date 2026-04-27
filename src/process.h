@@ -13,6 +13,7 @@ struct process {
   process_state state;
   struct program program;
   size_t pc;
+  unsigned int priority;
 
 	// index of cpu + 1, 0 means no cpu
 	int cpu_id;
@@ -20,12 +21,6 @@ struct process {
 
  process_state process_tick(struct process * self);
 
- struct process process_new(long pid, struct program prog);
+ struct process process_new(long pid, struct program prog, unsigned int priority);
 
  void process_free(struct process * self);
-
-
-
-
-
-

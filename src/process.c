@@ -15,13 +15,14 @@ const char * process_state_to_string(process_state state){
 	}
 }
 
-struct process process_new(long pid, struct program prog){
+struct process process_new(long pid, struct program prog, unsigned int priority){
 	struct process self = {
 		.prid = pid,
 		.cpu_id = -1,
 		.pc = 0,
 		.state = READY,
-		.program = prog
+		.program = prog,
+		.priority = priority
 	};
 	return self;
 }
@@ -37,22 +38,22 @@ void process_free(struct process * self){
            self->state = FINISHED;
            return FINISHED;
        }
-  
+
        program_op op = self->program.ops[self->pc];
-  
+
        if (self->cpu_id >= 0 && op == OP_RUN) {
            self->pc++; // Process uses CPU
        } else if (op == OP_WAIT) {
            self->pc++; // I/O progresses in background
        }
-  
+
        // Refresh op after possible increment to check next state
        // if (self->pc >= self->program.length) {
        //     self->state = FINISHED;
        //     return;
        // }
        // op = self->program.ops[self->pc];
-  
+
 
        // 2. State Transition Logic
        if (self->cpu_id >= 0) {
@@ -68,19 +69,3 @@ void process_free(struct process * self){
 
 			 return self->state;
    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
