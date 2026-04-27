@@ -4,12 +4,7 @@ all:
 	bear -- $(MAKE) -C src creschedo
 
 release:
-	bear -- $(MAKE) -C src BUILD=release creschedo
+	bear -- $(MAKE) -C src BUILD_TYPE=release creschedo
 
 clean:
 	$(MAKE) -C src clean
-
-
-
-
-
