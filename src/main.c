@@ -175,6 +175,42 @@ static int sim_run(void * ctx, FILE * _, const char * args[SHELL_ARGS_MAX]){
 	return 0;
 }
 
+static int show_metrics(void * ctx, FILE * _, const char * args[SHELL_ARGS_MAX]){
+  struct simulation * sim = (struct simulation *)(ctx);
+
+  bool show_process_metrics = false;
+  bool show_cpu_metrics = false;
+
+  if(args[0] == NULL || args[0][0] == '\0'){
+    printf("Showing all metrics");
+    show_process_metrics = true;
+    show_cpu_metrics = true;
+  } else if (strcmp(args[0], "proc") == 0){
+    show_process_metrics = true;
+  } else if (strcmp(args[0], "cpu") == 0){
+    show_cpu_metrics = true;
+  } else printf("Unknown metrics type: %.5s", args[0]);
+
+  if(show_process_metrics){
+    printf("%-6s%-4s%-4s%-4s%-20s%-20s\n", "ID", "A", "R", "W", "Times Blocked", "Times Preempted");
+    for (int i = 1; i <= sim->max_prid; ++i ) {
+      struct process * p = &sim->processes[i];
+      if(p->prid != 0){
+        printf("%-6d%-4d%-4d%-4d%-20d%-20d\n", p->prid,
+          p->metrics.active_ticks, p->metrics.ready_ticks, p->metrics.wait_ticks,
+          p->metrics.blocked_times, p->metrics.preempted_times);
+      }
+    }
+  }
+
+  if(show_cpu_metrics){
+    printf("*unimplemented*");
+  }
+
+  return 0;
+}
+
+
 int sim_clear(void * ctx, FILE * _, const char * __[SHELL_ARGS_MAX]){
   struct simulation * sim = (struct simulation *)(ctx);
   simulation_free(sim);
@@ -195,6 +231,7 @@ int main(){
 	shell_register_callback(&sh, "tick", sim_tick);
 	shell_register_callback(&sh, "run", sim_run);
 	shell_register_callback(&sh, "clear", sim_clear);
+	shell_register_callback(&sh, "metrics", show_metrics);
 	shell_start(&sh, stdin);
 	simulation_free(&sim);
 }
