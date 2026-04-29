@@ -35,16 +35,17 @@ void process_free(struct process * self){
 
  process_state process_tick(struct process *self) {
        if (self->state == FINISHED) return FINISHED;
-       if (self->pc >= self->program.length) {
-           self->state = FINISHED;
-           return FINISHED;
-       }
 
        switch (self->state) {
          case ACTIVE: self->metrics.active_ticks++;
          case WAIT: self->metrics.wait_ticks++;
          case READY: self->metrics.ready_ticks++;
          case FINISHED: break;
+       }
+
+       if (self->pc >= self->program.length) {
+           self->state = FINISHED;
+           return FINISHED;
        }
 
        program_op op = self->program.ops[self->pc];
