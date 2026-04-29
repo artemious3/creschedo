@@ -100,6 +100,7 @@ static int run_process(void * ctx, FILE * istream, const char * args[SHELL_ARGS_
 
 	if(prg.length == 0){
 		eprintln("error: program is empty, process was not spawned");
+		program_free(&prg);
 	} else {
 		simulation_process_spawn(sim, prg, prio);
 	}
