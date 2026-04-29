@@ -175,6 +175,13 @@ static int sim_run(void * ctx, FILE * _, const char * args[SHELL_ARGS_MAX]){
 	return 0;
 }
 
+int sim_clear(void * ctx, FILE * _, const char * __[SHELL_ARGS_MAX]){
+  struct simulation * sim = (struct simulation *)(ctx);
+  simulation_free(sim);
+  *sim = simulation_new(scheduler_fcfs_new());
+  return 0;
+}
+
 
 int main(){
 	eprintln("CreSchedo - OS Scheduler Simulator.");
@@ -187,6 +194,7 @@ int main(){
 	shell_register_callback(&sh, "ps", process_list);
 	shell_register_callback(&sh, "tick", sim_tick);
 	shell_register_callback(&sh, "run", sim_run);
+	shell_register_callback(&sh, "clear", sim_clear);
 	shell_start(&sh, stdin);
 	simulation_free(&sim);
 }
