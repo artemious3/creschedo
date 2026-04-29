@@ -10,7 +10,7 @@
 
 struct cpu {
 	prid_t prid;
-	long t_since_last_sched;
+	long t_since_last_assign;
 };
 
 struct simulation_event{

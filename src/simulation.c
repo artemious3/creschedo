@@ -11,6 +11,9 @@
 
 #define CPU_IS_BUSY(cpu) ((cpu).prid != 0)
 #define CPU_IS_IDLE(cpu) (!CPU_IS_BUSY((cpu)))
+#define CPU_TIMER_OVERFLOW(cpu) ((cpu).t_since_last_assign >= self->PREEMPT_TICKS)
+
+#define PREEMPTION_ENABLED(self) (self->PREEMPT_TICKS != 0)
 
 #define NO_CPU (-1)
 
@@ -82,11 +85,11 @@ static prid_t simulation_DBG_sched_first(struct simulation * self){
 struct simulation simulation_new(struct scheduler sched){
 	struct simulation self = {
 		.t = 0,
-		.cpus = {{.prid=0, .t_since_last_sched=0}},
+		.cpus = {{.prid=0, .t_since_last_assign=0}},
 		.min_free_prid = 1,
 		.max_prid = 0,
 		.processes = {{.prid = 0}},
-		.PREEMPT_TICKS = 100,
+		.PREEMPT_TICKS = 10,
 		.sched = sched,
 		.LOG_ENABLED = false,
 	};
@@ -121,6 +124,7 @@ static void simulation_cpu_assign(struct simulation * self, int cpu_id, prid_t p
 	}
 
 	self->cpus[cpu_id].prid = prid;
+	self->cpus[cpu_id].t_since_last_assign = 0;
 	self->processes[prid].cpu_id = cpu_id;
 
 	struct simulation_event ev = {.type = CPU_ASSIGNED, .cpuid = cpu_id, .prid = prid};
@@ -144,10 +148,9 @@ static void simulation_cpu_release(struct simulation * self, int cpu_id){
 	simulation_report_event(self, ev);
 }
 
-
 void simulation_tick(struct simulation* self) {
 
-	for(int i = 1; i <= self->max_prid; ++i){
+  for(int i = 1; i <= self->max_prid; ++i){
 		struct process * proc = &self->processes[i];
 		if(PROCESS_EXISTS(*proc)){
 			assert(i == proc->prid);
@@ -159,6 +162,18 @@ void simulation_tick(struct simulation* self) {
 				continue;
 			}
 
+			if(PROCESS_IS_CPU_ASSIGNED(*proc) && PREEMPTION_ENABLED(self)
+			  && CPU_TIMER_OVERFLOW(self->cpus[proc->cpu_id])){
+			  struct simulation_event ev = {
+					.type = CPU_TIMER_OVERFLOW,
+					.cpuid = proc->cpu_id,
+					.prid = proc->prid
+ 					};
+				simulation_report_event(self, ev);
+				simulation_cpu_release(self, proc->cpu_id);
+			}
+
+			// report PROCESS_CHANGED_STATE event
 			process_state old_state = proc->state;
 			process_state new_state = process_tick(proc);
 			if(old_state != new_state){
@@ -169,10 +184,10 @@ void simulation_tick(struct simulation* self) {
 							.process_new_state = new_state
 						};
 						simulation_report_event(self, ev);
-
 			}
-			if((new_state == FINISHED || new_state == WAIT) && PROCESS_IS_CPU_ASSIGNED(*proc)){
-				simulation_cpu_release(self, proc->cpu_id);
+
+			if(PROCESS_IS_CPU_ASSIGNED(*proc) && (new_state == FINISHED || new_state == WAIT)){
+					simulation_cpu_release(self, proc->cpu_id);
 			}
 		}
 	}
@@ -182,25 +197,14 @@ void simulation_tick(struct simulation* self) {
 		if(CPU_IS_IDLE(self->cpus[i])){
 			prid_t new_prid = simulation_schedule_process(self);
 			if(new_prid > 0){
-				// TODO : make separate function, like `simulation_schedule`
 				simulation_cpu_assign(self, i, new_prid);
 				process_state state = process_tick(&self->processes[new_prid]);
 				if(state != ACTIVE){
 					eprintln("warning: scheduler selected process %d, but its next state was %s", new_prid, process_state_to_string(state))
 				}
 			}
-
-
-		} else if (self->cpus[i].t_since_last_sched >= self->PREEMPT_TICKS){
-			struct simulation_event ev = {.type = CPU_TIMER_OVERFLOW, .cpuid = i, .prid = self->cpus[i].prid};
-			simulation_report_event(self, ev);
-
-			simulation_cpu_release(self, i);
-			prid_t new_prid = simulation_schedule_process(self);
-			if(new_prid > 0){
-				simulation_cpu_assign(self, i, new_prid);
-			}
 		}
+		self->cpus[i].t_since_last_assign++;
 	}
 
 	self->t++;
@@ -293,7 +297,7 @@ void simulation_process_list(struct simulation *self){
 void simulation_cpu_list(struct simulation *self){
 	printf("%-6s%-10s%-30s\n", "CPU", "PRID", "Time since last schedule");
 	for(int i = 0; i < SIMULATION_CPU_NUMBER; ++i){
-		printf("%-6d%-10d%-30ld\n", i, self->cpus[i].prid, self->cpus[i].t_since_last_sched);
+		printf("%-6d%-10d%-30ld\n", i, self->cpus[i].prid, self->cpus[i].t_since_last_assign);
 	}
 }
 
