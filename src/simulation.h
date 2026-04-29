@@ -38,6 +38,8 @@ struct simulation {
 
   prid_t min_free_prid;
 	prid_t max_prid;
+	unsigned long nproc;
+	unsigned long nproc_finished;
 	struct scheduler sched;
 
 	long PREEMPT_TICKS;
@@ -59,5 +61,7 @@ void simulation_process_list(struct simulation *self);
 void simulation_cpu_list(struct simulation *self);
 
 bool simulation_is_empty(struct simulation *self);
+
+bool simulation_is_finished(struct simulation *self);
 
 void simulation_free(struct simulation * self);

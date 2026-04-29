@@ -167,7 +167,7 @@ static int sim_run(void * ctx, FILE * _, const char * args[SHELL_ARGS_MAX]){
 		}
 	}
 
-	while(!simulation_is_empty(sim)){
+	while(!simulation_is_finished(sim)){
 		simulation_tick(sim);
 		log(sim);
 	}

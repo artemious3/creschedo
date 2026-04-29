@@ -53,11 +53,13 @@ static void simulation_report_event(struct simulation * self, struct simulation_
   		if(p->state == READY){
    			struct scheduler_process_descriptor pd = {
    			.prid = ev.prid,
-   			.priority = p->priority, // TEMPORARY
+   			.priority = p->priority,
    			.t_since = self->t
    			};
    			scheduler_report_ready(&self->sched, pd);
-    		}
+  		} else if (p->state == FINISHED) {
+        self->nproc_finished++;
+      }
   		break;
 		}
 		case CPU_TIMER_OVERFLOW:
@@ -91,6 +93,8 @@ struct simulation simulation_new(struct scheduler sched){
 		.processes = {{.prid = 0}},
 		.PREEMPT_TICKS = 10,
 		.sched = sched,
+		.nproc = 0,
+		.nproc_finished = 0,
 		.LOG_ENABLED = false,
 	};
 	return self;
@@ -155,10 +159,7 @@ void simulation_tick(struct simulation* self) {
 		if(PROCESS_EXISTS(*proc)){
 			assert(i == proc->prid);
 
-			// remove process 1 tick later after
-			// it has finished
 			if(proc->state == FINISHED){
-				simulation_process_remove(self, i);
 				continue;
 			}
 
@@ -231,6 +232,7 @@ bool simulation_process_spawn(struct simulation *self, struct program prg, unsig
 	self->min_free_prid = new_min_free_prid;
 	struct simulation_event ev = {.type = PROCESS_SPAWNED, .prid = new_prid};
 	simulation_report_event(self, ev);
+	self->nproc++;
 
 	return true;
 }
@@ -273,6 +275,7 @@ static bool simulation_process_remove(struct simulation *self, prid_t prid){
 	self->max_prid = new_max_prid;
 	struct simulation_event ev = {.type = PROCESS_REMOVED, .prid = prid};
 	simulation_report_event(self, ev);
+	self->nproc--;
 
 	return true;
 }
@@ -303,6 +306,10 @@ void simulation_cpu_list(struct simulation *self){
 
 bool simulation_is_empty(struct simulation *self){
 	return self->max_prid == 0;
+}
+
+bool simulation_is_finished(struct simulation *self){
+	return self->nproc == self->nproc_finished;
 }
 
 
