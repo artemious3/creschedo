@@ -1,5 +1,6 @@
 #pragma once
 #include "program.h"
+#include "metrics.h"
 #include <stdbool.h>
 
 typedef unsigned int prid_t;
@@ -14,6 +15,7 @@ struct process {
   struct program program;
   size_t pc;
   unsigned int priority;
+  struct metrics_process metrics;
 
 	// index of cpu + 1, 0 means no cpu
 	int cpu_id;

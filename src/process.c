@@ -22,7 +22,8 @@ struct process process_new(long pid, struct program prog, unsigned int priority)
 		.pc = 0,
 		.state = READY,
 		.program = prog,
-		.priority = priority
+		.priority = priority,
+		.metrics = {0}
 	};
 	return self;
 }
@@ -37,6 +38,13 @@ void process_free(struct process * self){
        if (self->pc >= self->program.length) {
            self->state = FINISHED;
            return FINISHED;
+       }
+
+       switch (self->state) {
+         case ACTIVE: self->metrics.active_ticks++;
+         case WAIT: self->metrics.wait_ticks++;
+         case READY: self->metrics.ready_ticks++;
+         case FINISHED: break;
        }
 
        program_op op = self->program.ops[self->pc];
@@ -59,11 +67,19 @@ void process_free(struct process * self){
        if (self->cpu_id >= 0) {
 
            if (self->state == READY) self->state = (op == OP_WAIT) ? WAIT : ACTIVE;
-           else if (self->state == ACTIVE && op == OP_WAIT) self->state = WAIT;
+           else if (self->state == ACTIVE && op == OP_WAIT) {
+             self->state = WAIT;
+             self->metrics.blocked_times++;
+           }
            else if (self->state == WAIT && op == OP_RUN) self->state = ACTIVE;
 
        } else {
-           if (self->state == ACTIVE || self->state == READY) self->state = (op == OP_WAIT) ? WAIT : READY;
+           if (self->state == ACTIVE || self->state == READY) {
+             if(self->state == ACTIVE){
+               self->metrics.preempted_times++;
+             }
+             self->state = (op == OP_WAIT) ? WAIT : READY;
+           }
            else if (self->state == WAIT && op == OP_RUN) self->state = READY;
        }
 
