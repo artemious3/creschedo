@@ -74,16 +74,6 @@ static void simulation_report_event(struct simulation * self, struct simulation_
 	}
 }
 
-static prid_t simulation_DBG_sched_first(struct simulation * self){
-	for(int i = 1; i <= self->max_prid; ++i){
-		struct process * proc = &self->processes[i];
-		if(PROCESS_EXISTS(*proc) && !PROCESS_IS_CPU_ASSIGNED(*proc) && proc->state == READY){
-			return i;
-		}
-	}
-	return 0;
-}
-
 struct simulation simulation_new(struct scheduler sched){
 	struct simulation self = {
 		.t = 0,

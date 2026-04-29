@@ -51,20 +51,11 @@ void process_free(struct process * self){
        program_op op = self->program.ops[self->pc];
 
        if (self->cpu_id >= 0 && op == OP_RUN) {
-           self->pc++; // Process uses CPU
+           self->pc++;
        } else if (op == OP_WAIT) {
-           self->pc++; // I/O progresses in background
+           self->pc++;
        }
 
-       // Refresh op after possible increment to check next state
-       // if (self->pc >= self->program.length) {
-       //     self->state = FINISHED;
-       //     return;
-       // }
-       // op = self->program.ops[self->pc];
-
-
-       // 2. State Transition Logic
        if (self->cpu_id >= 0) {
 
            if (self->state == READY) self->state = (op == OP_WAIT) ? WAIT : ACTIVE;
