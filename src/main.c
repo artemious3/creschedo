@@ -10,6 +10,27 @@
 #include "utils.h"
 #include "log.h"
 
+static const char * HELP_MSG =
+"@<filename>      -- execute all commands from a file <filename>\n"
+"spawn <prio>     -- spawn process with priority <prio>;\n"
+"                    You will be asked to input a program;\n"
+"                    program consists of lines `<N> <Action>`,\n"
+"                    where <N> is a positive number,\n"
+"                    <Action> is one of `r` - run, `w` - wait.\n"
+"                    End program with an empty line.\n"
+"kill <prid>      -- kill process with id <prid>\n"
+"cpu              -- show table of CPUs\n"
+"ps               -- show table of processess\n"
+"tick             -- invoke simulation tick\n"
+"run <log_option> -- invoke ticks until all processes are finished\n"
+"                    log options are:\n"
+"                    `show_cpu` -- show state of cpus after each tick\n"
+"                    `show_proc` -- show state of processes after each tick\n"
+"clear            -- reset simulation\n"
+"metrics          -- show metrics\n"
+"help             -- show this help message\n";
+
+
 int parse_positive_int(const char * s, bool * err){
 	if(err == NULL){
 		PANIC("err must not be null");
@@ -182,7 +203,7 @@ static int show_metrics(void * ctx, FILE * _, const char * args[SHELL_ARGS_MAX])
   bool show_cpu_metrics = false;
 
   if(args[0] == NULL || args[0][0] == '\0'){
-    printf("Showing all metrics");
+    printf("Showing all metrics\n");
     show_process_metrics = true;
     show_cpu_metrics = true;
   } else if (strcmp(args[0], "proc") == 0){
@@ -218,6 +239,11 @@ int sim_clear(void * ctx, FILE * _, const char * __[SHELL_ARGS_MAX]){
   return 0;
 }
 
+int show_help(void * ctx, FILE * _, const char * __[SHELL_ARGS_MAX]){
+  printf("%s", HELP_MSG);
+  return 0;
+}
+
 
 int main(){
 	eprintln("CreSchedo - OS Scheduler Simulator.");
@@ -232,6 +258,7 @@ int main(){
 	shell_register_callback(&sh, "run", sim_run);
 	shell_register_callback(&sh, "clear", sim_clear);
 	shell_register_callback(&sh, "metrics", show_metrics);
+	shell_register_callback(&sh, "help", show_help);
 	shell_start(&sh, stdin);
 	simulation_free(&sim);
 }
